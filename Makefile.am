@@ -36,6 +36,9 @@ AM_XSLTPROCFLAGS += \
 #
 # Plugins
 #
+if ENABLE_I3FOCUS_INPUT
+include i3focus/i3focus.mk
+endif
 
 include src/man.mk
 

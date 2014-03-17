@@ -64,6 +64,7 @@ J4SP_INIT([pluginsdir])
 #
 # Plugins
 #
+J4STATUS_PLUGINS_PLUGIN_I3FOCUS
 
 
 #
