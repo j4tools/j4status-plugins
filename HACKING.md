@@ -31,6 +31,15 @@ Here is a description of each argument:
 
 Example:
 
+    m4/i3focus.m4:
+        AC_DEFUN([J4STATUS_PLUGINS_PLUGIN_I3FOCUS], [
+            J4SP_ADD_INPUT_PLUGIN(i3focus, [i3 focus event], [yes], [
+                PKG_CHECK_MODULES([I3FOCUS_PLUGIN], [i3ipc-glib-1.0 gobject-2.0 glib-2.0])
+            ])
+        ])
+
+
+
     m4/exec.m4:
         AC_DEFUN([J4STATUS_PLUGINS_PLUGIN_EXEC], [
             J4SP_ADD_INPUT_PLUGIN([exec], [Command execution], [always], [
@@ -64,13 +73,14 @@ Example:
 
 
     ./configure --help output:
-        --disable-exec-input      Disable Command execution plugin
+        --disable-i3focus-input    Disable i3 focus event plugin
         --disable-mpris-input      Disable MPRIS D-Bus interface plugin
 
 
 
     ./configure output:
         Input plugins:
+            i3 focus event: yes (Default, disable with --disable-i3focus-input)
             Command execution: yes
             MPRIS D-Bus interface: yes (Default, disable with --disable-mpris-input)
 
@@ -103,6 +113,27 @@ Other availables variables:
 
 Example:
 
+    i3focus/i3focus.mk:
+        plugins_LTLIBRARIES += \
+            i3focus/i3focus.la
+
+
+        i3focus_i3focus_la_SOURCES = \
+            i3focus/src/i3focus.c
+
+        i3focus_i3focus_la_CFLAGS = \
+            $(AM_CFLAGS) \
+            $(I3FOCUS_PLUGIN_CFLAGS)
+
+        i3focus_i3focus_la_LDFLAGS = \
+            $(AM_LDFLAGS) \
+            -module -avoid-version -export-symbols-regex j4status_input
+
+        i3focus_i3focus_la_LIBADD = \
+            $(J4STATUS_PLUGIN_LIBS) \
+            $(I3FOCUS_PLUGIN_LIBS)
+
+
     exec/exec.mk:
         plugins_LTLIBRARIES += \
             exec/exec.la
@@ -113,7 +144,7 @@ Example:
 
         exec_exec_la_CFLAGS = \
             $(AM_CFLAGS) \
-            $(EXEC_PLUGINS_CFLAGS)
+            $(EXEC_PLUGIN_CFLAGS)
 
         exec_exec_la_LDFLAGS = \
             $(AM_LDFLAGS) \
@@ -121,7 +152,7 @@ Example:
 
         exec_exec_la_LIBADD = \
             $(J4STATUS_PLUGIN_LIBS) \
-            $(EXEC_PLUGINS_LIBS)
+            $(EXEC_PLUGIN_LIBS)
 
 
 
@@ -151,7 +182,7 @@ Example:
 
         mpris_mpris_la_CFLAGS = \
             $(AM_CFLAGS) \
-            $(MPRIS_PLUGINS_CFLAGS)
+            $(MPRIS_PLUGIN_CFLAGS)
 
         mpris_mpris_la_LDFLAGS = \
             $(AM_LDFLAGS) \
@@ -159,7 +190,7 @@ Example:
 
         mpris_mpris_la_LIBADD = \
             $(J4STATUS_PLUGIN_LIBS) \
-            $(MPRIS_PLUGINS_LIBS)
+            $(MPRIS_PLUGIN_LIBS)
 
 
         mpris/src/mpris-generated.h mpris/src/mpris-generated.c: mpris/src/mpris-interface.xml
@@ -171,6 +202,9 @@ Example:
         #
         # Plugins
         #
+        if ENABLE_I3FOCUS_INPUT
+        include i3focus/i3focus.mk
+        endif
         if ENABLE_EXEC_INPUT
         include exec/exec.mk
         endif
