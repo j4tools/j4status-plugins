@@ -40,6 +40,10 @@ if ENABLE_I3FOCUS_INPUT
 include i3focus/i3focus.mk
 endif
 
+if ENABLE_MPRIS_INPUT
+include mpris/mpris.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk
