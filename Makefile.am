@@ -3,6 +3,7 @@
  space := $(empty) $(empty)
 
  AM_DISTCHECK_CONFIGURE_FLAGS = \
+	--with-pluginsdir="$$dc_install_base/$(pluginsdir)" \
 	--disable-debug
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
