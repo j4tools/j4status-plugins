@@ -47,18 +47,19 @@ include src/man.mk
 #
 # Hooks
 #
-
+ ifneq ($(plugins_LTLIBRARIES),)
 install-data-hook: la-files-install-hook
 uninstall-hook: la-files-uninstall-hook
 
 # *.la files cleanup
 la-files-install-hook:
 	cd $(DESTDIR)$(pluginsdir) && \
-		rm $(plugins_LTLIBRARIES)
+		rm $(notdir $(plugins_LTLIBRARIES))
 
 # Remove shared object files at uninstall since
 # we remove *.la files at install
 la-files-uninstall-hook:
 	cd $(DESTDIR)$(pluginsdir) && \
-		rm $(plugins_LTLIBRARIES:.la=$(shrext_cmds))
+		rm $(notdir $(plugins_LTLIBRARIES:.la=$(shrext_cmds)))
 	rmdir $(DESTDIR)$(pluginsdir)
+ endif
