@@ -52,6 +52,7 @@ AM_CFLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"
 AM_CPPFLAGS=""
 AM_LDFLAGS="-no-undefined -Wl,--no-undefined"
 AM_XSLTPROCFLAGS="--nonet --stringparam man.output.quietly 1 --stringparam funcsynopsis.style ansi"
+AM_DOCBOOK_CONDITIONS="installation"
 
 
 if test -d .git; then
@@ -84,6 +85,7 @@ AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_CPPFLAGS)
 AC_SUBST(AM_LDFLAGS)
 AC_SUBST(AM_XSLTPROCFLAGS)
+AC_SUBST(AM_DOCBOOK_CONDITIONS)
 
 AM_SUBST_NOTMAKE(LIBS)
 AC_SUBST(shrext_cmds)
