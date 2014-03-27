@@ -1,0 +1,5 @@
+*.1
+*.5
+/src/config.ent
+
+local-rules.mk
