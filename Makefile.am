@@ -6,7 +6,7 @@
 	--with-pluginsdir="$$dc_install_base/$(pluginsdir)" \
 	--disable-debug
 
-ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+ACLOCAL_AMFLAGS = -I m4 -I src/libgwater ${ACLOCAL_FLAGS}
 AM_MAKEFLAGS = --no-print-directory
 
 noinst_LTLIBRARIES =
@@ -37,6 +37,10 @@ AM_XSLTPROCFLAGS += \
 #
 # Plugins
 #
+if ENABLE_ALSA_INPUT
+include alsa/alsa.mk
+endif
+
 if ENABLE_I3FOCUS_INPUT
 include i3focus/i3focus.mk
 endif

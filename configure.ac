@@ -60,11 +60,13 @@ if test -d .git; then
     AC_DEFINE_UNQUOTED([PACKAGE_VERSION], ["$PACKAGE_VERSION"], [Full version with git information])
 fi
 
+GW_INIT([src/libgwater])
 J4SP_INIT([pluginsdir])
 
 #
 # Plugins
 #
+J4STATUS_PLUGINS_PLUGIN_ALSA
 J4STATUS_PLUGINS_PLUGIN_I3FOCUS
 J4STATUS_PLUGINS_PLUGIN_MPRIS
 
