@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % config SYSTEM "config.ent">
+%config;
+]>
+
+<!--
+  j4status-plugins - A collection of plugins for j4status
+
+  Copyright © 2012-2014 Quentin "Sardem FF7" Glidic
+
+  This file is part of j4status-plugins.
+
+  j4status-plugins is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  j4status-plugins is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with j4status-plugins. If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<refentry id="j4status-alsa.conf">
+    <refentryinfo>
+        <title>&PACKAGE_NAME; Manual</title>
+        <productname>&PACKAGE_NAME;</productname>
+        <productnumber>&PACKAGE_VERSION;</productnumber>
+
+        <authorgroup>
+            <author>
+                <contrib>Developer</contrib>
+                <firstname>Quentin</firstname>
+                <surname>Glidic</surname>
+                <email>sardemff7@j4tools.org</email>
+            </author>
+        </authorgroup>
+    </refentryinfo>
+
+    <refmeta>
+        <refentrytitle>j4status-alsa.conf</refentrytitle>
+        <manvolnum>5</manvolnum>
+    </refmeta>
+
+    <refnamediv>
+        <refname>j4status-alsa.conf</refname>
+        <refpurpose>j4status ALSA plugin configuration</refpurpose>
+    </refnamediv>
+
+    <refsynopsisdiv>
+        <para>
+            Configuration for the ALSA plugin
+        </para>
+        <para>
+            The ALSA plugin use the main j4status configuration file (see <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
+        </para>
+    </refsynopsisdiv>
+
+    <refsect1 id="description">
+        <title>Description</title>
+
+        <para>
+            It controls the ALSA plugin behavior.
+        </para>
+    </refsect1>
+
+    <refsect1 id="sections">
+        <title>Sections</title>
+
+        <refsect2 id="section-alsa">
+            <title>Section <varname>[ALSA]</varname></title>
+
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <varname>Cards=</varname>
+                        (A <type>list of card names</type>, defaults to <literal>empty</literal>)
+                    </term>
+                    <listitem>
+                        <para>The list of cards to monitor.</para>
+                        <para>Examples: <literal>"default"</literal>, <literal>"hw:0"</literal></para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+
+    <refsect1 id="see-also">
+        <title>See Also</title>
+        <para>
+            <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+        </para>
+    </refsect1>
+</refentry>

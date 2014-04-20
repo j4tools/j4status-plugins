@@ -3,6 +3,9 @@ include src/libgwater/alsa-mixer.mk
 plugins_LTLIBRARIES += \
 	alsa/alsa.la
 
+man5_MANS += \
+	alsa/man/j4status-alsa.conf.5
+
 
 alsa_alsa_la_SOURCES = \
 	alsa/src/alsa.c
