@@ -1,3 +1,22 @@
+Commiting a change
+==================
+
+Commit message
+--------------
+
+The commit message *must* start with the plugin name followed by a colon.
+You then add a short description of the change.
+(If possible, this first line should be less than 50 characters.)
+
+If needed, you add details after a blank line.
+
+Example:
+
+    i3focus: Update titles for all focused containers
+
+    The title should be updated on title events.
+
+
 To add a new plugin
 ===================
 
