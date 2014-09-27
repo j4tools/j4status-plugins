@@ -1,5 +1,5 @@
 plugins_LTLIBRARIES += \
-	mpris.la \
+	mpris/mpris.la \
 	$(null)
 
 man5_MANS += \
@@ -21,23 +21,23 @@ EXTRA_DIST += \
 	$(null)
 
 
-mpris_la_SOURCES = \
+mpris_mpris_la_SOURCES = \
 	mpris/src/mpris-generated.c \
 	mpris/src/mpris.c \
 	mpris/src/mpris-generated.h \
 	$(null)
 
-mpris_la_CFLAGS = \
+mpris_mpris_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	$(MPRIS_PLUGIN_CFLAGS) \
 	$(null)
 
-mpris_la_LDFLAGS = \
+mpris_mpris_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
 	-module -avoid-version -export-symbols-regex j4status_input \
 	$(null)
 
-mpris_la_LIBADD = \
+mpris_mpris_la_LIBADD = \
 	$(J4STATUS_PLUGIN_LIBS) \
 	$(MPRIS_PLUGIN_LIBS) \
 	$(null)
