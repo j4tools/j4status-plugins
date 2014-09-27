@@ -50,5 +50,5 @@ mpris_mpris_la_LIBADD = \
 # Ordering rule
 mpris/mpris.la mpris/src/mpris_mpris_la-mpris.lo: mpris/src/mpris-generated.h
 
-mpris/src/mpris-generated.h mpris/src/mpris-generated.c:
+mpris/src/mpris-generated.h mpris/src/mpris-generated.c: mpris/src/mpris-interface.xml
 	$(AM_V_GEN)$(MPRIS_GDBUS_CODEGEN) --generate-c-code mpris/src/mpris-generated mpris/src/mpris-interface.xml
