@@ -27,6 +27,10 @@ mpris_mpris_la_SOURCES = \
 	mpris/src/mpris-generated.h \
 	$(null)
 
+mpris_mpris_la_CPPFLAGS = \
+	-D G_LOG_DOMAIN=\"j4status-plugins-mpris\" \
+	$(null)
+
 mpris_mpris_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	$(MPRIS_PLUGIN_CFLAGS) \

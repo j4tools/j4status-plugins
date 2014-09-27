@@ -10,6 +10,10 @@ man5_MANS += \
 alsa_alsa_la_SOURCES = \
 	alsa/src/alsa.c
 
+alsa_alsa_la_CPPFLAGS = \
+	-D G_LOG_DOMAIN=\"j4status-plugins-alsa\" \
+	$(null)
+
 alsa_alsa_la_CFLAGS = \
 	$(AM_CFLAGS) \
 	$(ALSA_PLUGIN_CFLAGS)
