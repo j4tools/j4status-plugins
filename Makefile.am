@@ -49,6 +49,10 @@ if ENABLE_MPRIS_INPUT
 include mpris/mpris.mk
 endif
 
+if ENABLE_IW_INPUT
+include iw/iw.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk
