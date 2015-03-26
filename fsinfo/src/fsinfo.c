@@ -26,18 +26,18 @@
 
 #include <glib.h>
 #include <j4status-plugin-input.h>
-#include <blkid.h>
+#include <blkid.h> // blkid_evaluate_tag(), blkid_cache
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+#include <unistd.h> // access()
 #endif //HAVE_UNISTD_H
 
 #ifdef HAVE_MNTENT_H
-#include <mntent.h>
+#include <mntent.h> // setmntent(), struct mntent, getmntent(), endmntent()
 #endif //HAVE_MNTENT_H
 
 #ifdef HAVE_SYS_STATVFS_H
-#include <sys/statvfs.h>
+#include <sys/statvfs.h> // statvfs(), struct statvfs
 #endif //HAVE_SYS_STATVFS_H
 
 /// implementation of J4statusPluginContext
@@ -46,6 +46,8 @@ struct _J4statusPluginContext
     GSList *sections;
     gboolean started;
     guint period;
+    gchar *not_found;
+    gchar *unmounted;
     const gchar *mtab;
     blkid_cache cache;
 };
@@ -66,14 +68,12 @@ typedef struct
     gchar *path;
     J4statusFormatString *format;
     guint64 used_tokens;
-    gchar *not_found;
-    gchar *unmounted;
 } J4statusFSInfoSection;
 
 /// possible mtab file location
-const gchar *MTAB = "/etc/mtab";
+const gchar MTAB[] = "/etc/mtab";
 /// alternative mtab file location
-const gchar *PROC_MOUNTS = "/proc/mounts";
+const gchar PROC_MOUNTS[] = "/proc/mounts";
 //TODO: organize these things into an array if they keep growing
 
 /// indices for _j4status_fsinfo_tokens[]
@@ -91,7 +91,7 @@ enum J4statusFSInfoToken
 };
 
 /// used in j4status_format_string_parse()
-static const gchar * const _j4status_fsinfo_tokens[] =
+static const gchar *const _j4status_fsinfo_tokens[] =
 {
     [TOKEN_AVAILABLE]       = "avail",
     [TOKEN_FREE]            = "free",
@@ -142,7 +142,7 @@ static const gchar *
 _j4status_fsinfo_format_callback(const gchar *token, guint64 value,
                                  gconstpointer user_data)
 {
-    gchar * const *fdata = user_data;
+    gchar *const *fdata = user_data;
     if (value < TOTAL_TOKEN_COUNT)
         return fdata[value];
     else
@@ -151,16 +151,15 @@ _j4status_fsinfo_format_callback(const gchar *token, guint64 value,
 
 /**
  * A part of section_update that gets re-used several times
- * Reports an error during update (duh)
+ * Reports an error during update and returns
  */
-static inline void
-update_error(J4statusSection *section, const gchar *error)
-{
-    j4status_section_set_state(section, J4STATUS_STATE_BAD);
-    j4status_section_set_value(section, g_strdup("Error"));
-    g_warning(error);
-    return;
-}
+#define UPDATE_ERROR(error) do                                                \
+{                                                                             \
+    j4status_section_set_state(section->section, J4STATUS_STATE_BAD);         \
+    j4status_section_set_value(section->section, g_strdup("Error"));          \
+    g_warning(error);                                                         \
+    return;                                                                   \
+} while (0)
 
 /**
  * Subfunction for section_update
@@ -170,7 +169,8 @@ static inline gchar *
 print_disk_size(fsblkcnt_t blocks, gulong bsize)
 {
     guint64 value = (guint64) blocks * bsize << 4;
-    const gchar *PREFIXES = "\0KMGTP"; // 1150 Pib oughta be enough for anybody
+    const gchar PREFIXES[] = "\0KMGTP"; // 1150 Pib ought to be
+                                        // enough for anybody
     const gchar *prefix;
     for (prefix = PREFIXES; value >= (1 << 14); prefix++)
         value >>= 10;
@@ -190,7 +190,7 @@ print_disk_size(fsblkcnt_t blocks, gulong bsize)
 static void
 _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
 {
-    const gchar *ESTATVFS = "Could not get filesystem stats";
+    const gchar ESTATVFS[] = "Could not get filesystem stats";
 
     J4statusFSInfoSection *section = data;
     J4statusPluginContext *context = user_data;
@@ -200,7 +200,7 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
         j4status_section_set_state(section->section,
                                    J4STATUS_STATE_UNAVAILABLE);
         j4status_section_set_value(section->section,
-                                   g_strdup(section->not_found));
+                                   g_strdup(context->not_found));
         return;
       }
 
@@ -208,12 +208,9 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
     if (section->path)
       {
         if (statvfs(section->path, &stats) < 0)
-          {
             //TODO: account for the possibility that device was unmounted
             // & mount point deleted since last check
-            update_error(section->section, ESTATVFS);
-            return;
-          }
+            UPDATE_ERROR(ESTATVFS);
         if (stats.f_fsid != section->fsid)
           {
             g_free(section->path);
@@ -224,10 +221,7 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
       {
         FILE *mtab = setmntent(context->mtab, "r");
         if (!mtab)
-          {
-            update_error(section->section, "Could not open mtab");
-            return;
-          }
+            UPDATE_ERROR("Could not open mtab");
         struct mntent *mnt;
         while (mnt = getmntent(mtab))
             if (g_strcmp0(section->device, mnt->mnt_fsname) == 0)
@@ -239,10 +233,7 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
         if (section->path)
           {
             if (statvfs(section->path, &stats) < 0)
-              {
-                update_error(section->section, ESTATVFS);
-                return;
-              }
+                UPDATE_ERROR(ESTATVFS);
             section->fsid = stats.f_fsid;
           }
       }
@@ -250,7 +241,7 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
       {
         j4status_section_set_state(section->section, J4STATUS_STATE_NO_STATE);
         j4status_section_set_value(section->section,
-                                   g_strdup(section->unmounted));
+                                   g_strdup(context->unmounted));
         return;
       }
 
@@ -321,8 +312,6 @@ _j4status_fsinfo_section_free(gpointer data)
     g_free(section->id);
     g_free(section->device);
     g_free(section->path);
-    g_free(section->unmounted);
-    g_free(section->not_found);
     g_free(section);
 }
 
@@ -336,8 +325,8 @@ _j4status_fsinfo_section_free(gpointer data)
 static J4statusPluginContext *
 _j4status_fsinfo_init(J4statusCoreInterface *core)
 {
-    const gchar *FILESYSTEM = "Filesystem";
-    const gchar *FORMAT_DEFAULT = "${avail} (${p_avail}%)";
+    const gchar FILESYSTEM[] = "Filesystem";
+    const gchar FORMAT_DEFAULT[] = "${avail} (${p_avail}%)";
 
     GKeyFile *key_file = j4status_config_get_key_file(FILESYSTEM);
     if (!key_file) return NULL;
@@ -360,6 +349,10 @@ _j4status_fsinfo_init(J4statusCoreInterface *core)
       }
     gint period = g_key_file_get_integer(key_file, FILESYSTEM, // positive only
                                          "Frequency", NULL);
+    gchar *not_found = g_key_file_get_locale_string(key_file, FILESYSTEM,
+                                                    "NotFound", NULL, NULL);
+    gchar *unmounted = g_key_file_get_locale_string(key_file, FILESYSTEM,
+                                                    "Unmounted", NULL, NULL);
     blkid_cache cache;
     gboolean blkid = blkid_get_cache(&cache, NULL) >= 0;
     if (!blkid)
@@ -397,7 +390,7 @@ _j4status_fsinfo_init(J4statusCoreInterface *core)
                 section->id_t = ID_DEVICE;
             else
               {
-                //TODO: warn?
+                g_warning("Could not locate device %s", names[idx]);
                 g_free(section);
                 g_free(group);
                 continue;
@@ -405,11 +398,6 @@ _j4status_fsinfo_init(J4statusCoreInterface *core)
           }
         gchar *format = g_key_file_get_locale_string(key_file, group,
                                                      "Format", NULL, NULL);
-        //TODO: move these two in general config section?
-        gchar *not_found = g_key_file_get_locale_string(key_file, group,
-                                                       "NotFound", NULL, NULL);
-        gchar *unmounted = g_key_file_get_locale_string(key_file, group,
-                                                      "Unmounted", NULL, NULL);
         g_free(group);
 
         section->device = NULL;
@@ -417,8 +405,6 @@ _j4status_fsinfo_init(J4statusCoreInterface *core)
         section->format = j4status_format_string_parse(format,
                                     _j4status_fsinfo_tokens, TOTAL_TOKEN_COUNT,
                                         FORMAT_DEFAULT, &section->used_tokens);
-        section->not_found = not_found ? not_found : g_strdup("Not found");
-        section->unmounted = unmounted ? unmounted : g_strdup("Unmounted");
         section->section = j4status_section_new(core);
         j4status_section_set_name(section->section, "fsinfo");
         j4status_section_set_instance(section->section, names[idx]);
@@ -435,6 +421,8 @@ _j4status_fsinfo_init(J4statusCoreInterface *core)
     context->sections = sections;
     context->started = FALSE;
     context->period = period > 0 ? period : 10;
+    context->not_found = not_found ? not_found : g_strdup("Not found");
+    context->unmounted = unmounted ? unmounted : g_strdup("Unmounted");
     context->cache = blkid ? cache : NULL;
     context->mtab = mtab;
     return context;
@@ -474,6 +462,8 @@ _j4status_fsinfo_uninit(J4statusPluginContext *context)
     g_slist_free_full(context->sections, &_j4status_fsinfo_section_free);
     //TODO: drop cache dynamically
     blkid_put_cache(context->cache);
+    g_free(context->unmounted);
+    g_free(context->not_found);
     g_free(context);
 }
 
