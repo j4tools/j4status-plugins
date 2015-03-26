@@ -94,7 +94,7 @@ static const gchar *
 _j4status_iw_format_callback(const gchar *token, guint64 value,
                              gconstpointer user_data)
 {
-    gchar * const *fdata = user_data;
+    gchar *const *fdata = user_data;
     if (value < TOTAL_TOKEN_COUNT)
         return fdata[value];
     else
@@ -187,7 +187,8 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
         else
           {
             // IPv4 resides in bytes 2 to 5
-            struct in_addr *in = &request.ifr_addr.sa_data[2];
+            struct in_addr *in = (struct in_addr *)
+                                 &request.ifr_addr.sa_data[2];
             // For some reason the string is returned in an "internal array".
             // Makes me suspicious... Here it should be used
             // for very short time though, so meh.
@@ -240,8 +241,8 @@ _j4status_iw_section_free(gpointer data)
 static J4statusPluginContext *
 _j4status_iw_init(J4statusCoreInterface *core)
 {
-    const gchar *WIRELESS = "Wireless";
-    const gchar *FORMAT_DEFAULT = "${ip> @ }${essid}${: <quality>%}";
+    const gchar WIRELESS[] = "Wireless";
+    const gchar FORMAT_DEFAULT[] = "${ip> @ }${essid}${: <quality>%}";
 
     GKeyFile *key_file = j4status_config_get_key_file(WIRELESS);
     if (!key_file)

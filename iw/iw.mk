@@ -1,6 +1,9 @@
 plugins_LTLIBRARIES += \
 	iw/iw.la
 
+man5_MANS += \
+	iw/man/j4status-iw.conf.5
+
 iw_iw_la_SOURCES = \
 	iw/src/iw.c
 
