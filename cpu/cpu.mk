@@ -1,6 +1,9 @@
 plugins_LTLIBRARIES += \
 	cpu/cpu.la
 
+man5_MANS += \
+	cpu/man/j4status-cpu.conf.5
+
 cpu_cpu_la_SOURCES = \
 	cpu/src/cpu.c
 

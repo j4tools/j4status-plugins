@@ -73,7 +73,8 @@ enum J4statusCPUStatEntry
 };
 
 /// the file itself
-const gchar *PROC_STAT = "/proc/stat";
+#define PROC_STAT_STR "/proc/stat"
+const gchar PROC_STAT[] = PROC_STAT_STR;
 
 
 
@@ -89,8 +90,7 @@ _j4status_cpu_parse_load(gulong time[])
     GIOChannel *pstat = g_io_channel_new_file(PROC_STAT, "r", NULL);
     if (!pstat)
       {
-        //TODO: maybe use PROC_STAT in msg?
-        g_warning("Could not open /proc/stat file");
+        g_warning("Could not open " PROC_STAT_STR " file");
         return FALSE;
       }
     gchar *line;
@@ -98,7 +98,7 @@ _j4status_cpu_parse_load(gulong time[])
     g_io_channel_unref(pstat);
     if (read != G_IO_STATUS_NORMAL)
       {
-        g_warning("Error reading /proc/stat");
+        g_warning("Error reading " PROC_STAT_STR);
         g_free(line);
         return FALSE;
       }
@@ -158,10 +158,12 @@ _j4status_cpu_update(gpointer user_data)
             default:
                 continue;
           }
-    //TODO: configured color-coding
-    j4status_section_set_state(context->section, J4STATUS_STATE_NO_STATE);
+    gdouble load = 100.0 * busy / MAX(idle + busy, 1);
+    j4status_section_set_state(context->section,
+                    load < 50.0 ? J4STATUS_STATE_NO_STATE :
+                    load > 90.0 ? J4STATUS_STATE_BAD : J4STATUS_STATE_AVERAGE);
     j4status_section_set_value(context->section, g_strdup_printf("%04.1f%%",
-                                          100.0 * busy / MAX(idle + busy, 1)));
+                                                                 load));
     return G_SOURCE_CONTINUE;
 }
 
@@ -175,11 +177,11 @@ _j4status_cpu_update(gpointer user_data)
 static J4statusPluginContext *
 _j4status_cpu_init(J4statusCoreInterface *core)
 {
-    const gchar *CPU_LOAD = "CPULoad";
+    const gchar CPU_LOAD[] = "CPULoad";
 
     if (access(PROC_STAT, R_OK) < 0)
       {
-        g_critical("Could not find /proc/stat; aborting");
+        g_critical("Could not find " PROC_STAT_STR "; aborting");
         return NULL;
       }
     GKeyFile *key_file = j4status_config_get_key_file(CPU_LOAD);
