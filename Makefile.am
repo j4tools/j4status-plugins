@@ -53,6 +53,10 @@ if ENABLE_IW_INPUT
 include iw/iw.mk
 endif
 
+if ENABLE_CPU_INPUT
+include cpu/cpu.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk
