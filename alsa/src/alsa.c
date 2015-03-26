@@ -210,7 +210,7 @@ _j4status_alsa_section_new(J4statusCoreInterface *core, gchar *card)
 
     section->section = j4status_section_new(core);
     j4status_section_set_name(section->section, "alsa");
-    j4status_section_set_name(section->section, card);
+    j4status_section_set_instance(section->section, card);
 
     if ( ! j4status_section_insert(section->section) )
     {
