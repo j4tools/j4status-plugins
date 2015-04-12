@@ -1,6 +1,9 @@
 plugins_LTLIBRARIES += \
 	fsinfo/fsinfo.la
 
+man5_MANS += \
+	fsinfo/man/j4status-fsinfo.conf.5
+
 fsinfo_fsinfo_la_SOURCES = \
 	fsinfo/src/fsinfo.c
 
