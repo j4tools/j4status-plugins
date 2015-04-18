@@ -214,7 +214,7 @@
                         <varname>Device=</varname> (<type>path</type>)
                     </term>
                     <listitem>
-                        <para>Path to storage device (e.g. "<literal>/dev/sda1</literal>".</para>
+                        <para>Path to storage device (e.g. "<literal>/dev/sda1</literal>").</para>
                     </listitem>
                 </varlistentry>
             </variablelist>

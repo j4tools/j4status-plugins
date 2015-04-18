@@ -87,7 +87,7 @@
                     </term>
                     <listitem>
                         <para>Update frequency in seconds.</para>
-                        <para>Lower frequency smoothes load metrics.</para>
+                        <para>Defaults to 1. Lower frequency smoothes load metrics.</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
