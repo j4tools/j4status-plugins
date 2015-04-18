@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry [
+<!ENTITY % config SYSTEM "config.ent">
+%config;
+]>
+
+<!--
+  cpu - j4status plugin for CPU usage fetching
+
+  Copyright 2014 Mihail "Tomsod" Sh. <tomsod-m@ya.ru>
+
+  This file is part of j4status-plugins.
+
+  j4status-plugins is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  j4status-plugins is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with j4status-plugins. If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<refentry>
+    <info>
+        <title>&PACKAGE_NAME; Manual</title>
+        <productname>&PACKAGE_NAME;</productname>
+        <productnumber>&PACKAGE_VERSION;</productnumber>
+
+        <authorgroup>
+            <author>
+                <personname>
+                    <firstname>Quentin</firstname>
+                    <surname>Glidic</surname>
+                </personname>
+                <contrib>j4status developer</contrib>
+                <email>sardemff7@j4tools.org</email>
+            </author>
+
+            <author>
+                <personname>
+                    <firstname>Mihail</firstname>
+                    <surname>Sh.</surname>
+                </personname>
+                <contrib>Plugin developer</contrib>
+                <email>tomsod-m@ya.ru</email>
+            </author>
+        </authorgroup>
+    </info>
+
+    <refnamediv>
+        <refname>j4status-cpu.conf</refname>
+        <refpurpose>j4status cpu plugin configuration</refpurpose>
+    </refnamediv>
+    <refmeta>
+        <manvolnum>5</manvolnum>
+    </refmeta>
+
+    <refsynopsisdiv>
+        <para>
+            Configuration for the cpu plugin
+        </para>
+        <para>
+            The cpu plugin uses the main <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry> configuration file.
+        </para>
+    </refsynopsisdiv>
+
+    <refsection>
+        <title>Description</title>
+        <para>
+            cpu plugin shows current processor load.
+        </para>
+    </refsection>
+
+    <refsection>
+        <title>Sections</title>
+        <refsection>
+            <title>Section <varname>[CPULoad]</varname></title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <varname>Frequency=</varname> (<type>number</type>)
+                    </term>
+                    <listitem>
+                        <para>Update frequency in seconds.</para>
+                        <para>Defaults to 1. Lower frequency smoothes load metrics.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsection>
+    </refsection>
+
+    <refsection>
+        <title>See also</title>
+        <para>
+            <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+        </para>
+    </refsection>
+</refentry>

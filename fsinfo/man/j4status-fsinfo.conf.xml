@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry [
+<!ENTITY % config SYSTEM "config.ent">
+%config;
+]>
+
+<!--
+  fsinfo - j4status plugin for displaying filesystem statistics
+
+  Copyright 2014 Mihail "Tomsod" Sh. <tomsod-m@ya.ru>
+
+  This file is part of j4status-plugins.
+
+  j4status-plugins is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  j4status-plugins is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with j4status-plugins. If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<refentry>
+    <info>
+        <title>&PACKAGE_NAME; Manual</title>
+        <productname>&PACKAGE_NAME;</productname>
+        <productnumber>&PACKAGE_VERSION;</productnumber>
+
+        <authorgroup>
+            <author>
+                <personname>
+                    <firstname>Quentin</firstname>
+                    <surname>Glidic</surname>
+                </personname>
+                <contrib>j4status developer</contrib>
+                <email>sardemff7@j4tools.org</email>
+            </author>
+
+            <author>
+                <personname>
+                    <firstname>Mihail</firstname>
+                    <surname>Sh.</surname>
+                </personname>
+                <contrib>Plugin developer</contrib>
+                <email>tomsod-m@ya.ru</email>
+            </author>
+        </authorgroup>
+    </info>
+
+    <refnamediv>
+        <refname>j4status-fsinfo.conf</refname>
+        <refpurpose>j4status fsinfo plugin configuration</refpurpose>
+    </refnamediv>
+    <refmeta>
+        <manvolnum>5</manvolnum>
+    </refmeta>
+
+    <refsynopsisdiv>
+        <para>
+            Configuration for the fsinfo plugin
+        </para>
+        <para>
+            The fsinfo plugin uses the main <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry> configuration file.
+        </para>
+    </refsynopsisdiv>
+
+    <refsection>
+        <title>Description</title>
+        <para>
+            fsinfo plugin displays filesystem usage status.
+        </para>
+    </refsection>
+
+    <refsection>
+        <title>Sections</title>
+        <refsection>
+            <title>Section <varname>[Filesystem]</varname></title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <varname>Names=</varname> (<type>string list</type>)
+                    </term>
+                    <listitem>
+                        <para>A list of (arbitrary) names representing storage devices.</para>
+                        <para>A section is created for each device, labeled after these names.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <varname>NotFound=</varname> (<type>string</type>)
+                    </term>
+                    <listitem>
+                        <para>What to display when storage device is absent.</para>
+                        <para>Defaults to "<literal>Not found</literal>".</para>
+                    </listitem>
+                </varlistentry>
+                 <varlistentry>
+                    <term>
+                        <varname>Unmounted=</varname> (<type>string</type>)
+                    </term>
+                    <listitem>
+                        <para>What to display when storage device is present but not mounted.</para>
+                        <para>Defaults to "<literal>Unmounted</literal>".</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <varname>Frequency=</varname> (<type>number</type>)
+                    </term>
+                    <listitem>
+                        <para>Update frequency, in seconds.</para>
+                        <para>Defaults to <literal>10</literal>.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsection>
+
+        <refsection>
+            <title>Section <varname>[Filesystem <replaceable>name</replaceable>]</varname></title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <varname>Format=</varname> (<type>format string</type>)
+                    </term>
+                    <listitem>
+                        <para>What to display.</para>
+                        <para>Defaults to "<literal>${avail} (${p_avail}%)</literal>".</para>
+                        <para><varname>reference</varname> can be:</para>
+                        <variablelist>
+                            <varlistentry>
+                                <term>
+                                    <literal>avail</literal>
+                                </term>
+                                <listitem>
+                                    <para>Free memory available for unprivilegied users.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>
+                                    <literal>free</literal>
+                                </term>
+                                <listitem>
+                                    <para>Free memory total.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>
+                                    <literal>used</literal>
+                                </term>
+                                <listitem>
+                                    <para>Total used memory.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>
+                                    <literal>total</literal>
+                                </term>
+                                <listitem>
+                                    <para>Total memory available for unprivilegied users.</para>
+                                    <para>Essentialy <literal>avail + used</literal>. Displaying filesystem size in dynamic statusline would be silly.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>
+                                    <literal>p_avail</literal>
+                                </term>
+                                <listitem>
+                                    <para>Percentage of available unprivilegied memory.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>
+                                    <literal>p_used</literal>
+                                </term>
+                                <listitem>
+                                    <para>Percentage of used unprivilegied memory.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>
+                                    <literal>p_free</literal>
+                                </term>
+                                <listitem>
+                                    <para>Percentage free of total memory.</para>
+                                </listitem>
+                            </varlistentry>
+                        </variablelist>
+                    </listitem>
+                </varlistentry>
+                <para>At least one of the following must be present:</para>
+                <varlistentry>
+                    <term>
+                        <varname>UUID=</varname> (<type>uuid</type>)
+                    </term>
+                    <listitem>
+                        <para>Full device UUID.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <varname>Label=</varname> (<type>label</type>)
+                    </term>
+                    <listitem>
+                        <para>Device label.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <varname>Device=</varname> (<type>path</type>)
+                    </term>
+                    <listitem>
+                        <para>Path to storage device (e.g. "<literal>/dev/sda1</literal>").</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsection>
+    </refsection>
+
+    <refsection>
+        <title>See also</title>
+        <para>
+            <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+        </para>
+    </refsection>
+</refentry>
