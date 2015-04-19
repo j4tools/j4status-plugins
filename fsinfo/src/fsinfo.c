@@ -223,7 +223,7 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
         if (!mtab)
             UPDATE_ERROR("Could not open mtab");
         struct mntent *mnt;
-        while (mnt = getmntent(mtab))
+        while ((mnt = getmntent(mtab)) != NULL)
             if (g_strcmp0(section->device, mnt->mnt_fsname) == 0)
               {
                 section->path = g_strdup(mnt->mnt_dir);
