@@ -35,20 +35,20 @@
         <authorgroup>
             <author>
                 <personname>
-                    <firstname>Quentin</firstname>
-                    <surname>Glidic</surname>
-                </personname>
-                <contrib>j4status developer</contrib>
-                <email>sardemff7@j4tools.org</email>
-            </author>
-
-            <author>
-                <personname>
                     <firstname>Mihail</firstname>
                     <surname>Sh.</surname>
                 </personname>
                 <contrib>Plugin developer</contrib>
                 <email>tomsod-m@ya.ru</email>
+            </author>
+
+            <author>
+                <personname>
+                    <firstname>Quentin</firstname>
+                    <surname>Glidic</surname>
+                </personname>
+                <contrib>j4status developer</contrib>
+                <email>sardemff7@j4tools.org</email>
             </author>
         </authorgroup>
     </info>
