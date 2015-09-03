@@ -61,6 +61,10 @@ if ENABLE_CPU_INPUT
 include cpu/cpu.mk
 endif
 
+if ENABLE_MEM_INPUT
+include mem/mem.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk
