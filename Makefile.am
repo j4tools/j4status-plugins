@@ -65,6 +65,10 @@ if ENABLE_MEM_INPUT
 include mem/mem.mk
 endif
 
+if ENABLE_BACKLIGHT_INPUT
+include backlight/backlight.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk

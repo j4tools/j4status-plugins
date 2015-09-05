@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry [
+<!ENTITY % config SYSTEM "config.ent">
+%config;
+]>
+
+<!--
+  mem - j4status plugin for displaying backlight brightnes percentage.
+
+  Copyright 2015 Jerko Steiner <jerko.steiner+github@gmail.com>
+
+  This file is part of j4status-plugins.
+
+  j4status-plugins is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  j4status-plugins is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with j4status-plugins. If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<refentry>
+    <info>
+        <title>&PACKAGE_NAME; Manual</title>
+        <productname>&PACKAGE_NAME;</productname>
+        <productnumber>&PACKAGE_VERSION;</productnumber>
+
+        <authorgroup>
+            <author>
+                <personname>
+                    <firstname>Jerko</firstname>
+                    <surname>Steiner</surname>
+                </personname>
+                <contrib>Plugin developer</contrib>
+                <email>jerko.steiner+github@gmail.com</email>
+            </author>
+        </authorgroup>
+    </info>
+
+    <refnamediv>
+        <refname>j4status-backlight.conf</refname>
+        <refpurpose>j4status backlight plugin configuration</refpurpose>
+    </refnamediv>
+    <refmeta>
+        <manvolnum>5</manvolnum>
+    </refmeta>
+
+    <refsynopsisdiv>
+        <para>
+            Configuration for the backlight plugin
+        </para>
+        <para>
+            The backlight plugin uses the main <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry> configuration file.
+        </para>
+    </refsynopsisdiv>
+
+    <refsection>
+        <title>Description</title>
+        <para>
+            backlight plugin shows current backlight percentage.
+        </para>
+    </refsection>
+
+    <refsection>
+        <title>Sections</title>
+        <refsection>
+            <title>Section <varname>[Backlight]</varname></title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <varname>Backend=</varname> (<type>string</type>)
+                    </term>
+                    <listitem>
+                        <para>Backlight provider.</para>
+                        <para>Default is intel_backlight.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsection>
+    </refsection>
+
+    <refsection>
+        <title>See also</title>
+        <para>
+            <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+        </para>
+    </refsection>
+</refentry>
