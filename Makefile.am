@@ -69,6 +69,10 @@ if ENABLE_BACKLIGHT_INPUT
 include backlight/backlight.mk
 endif
 
+if ENABLE_INOTIFY_INPUT
+include inotify/inotify.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk

@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % config SYSTEM "config.ent">
+%config;
+]>
+
+<!--
+  j4status - Status line generator
+
+  Copyright © 2012-2013 Quentin "Sardem FF7" Glidic
+
+  This file is part of j4status.
+
+  j4status is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  j4status is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with j4status. If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<refentry id="j4status-inotify.conf">
+    <refentryinfo>
+        <title>&PACKAGE_NAME; Manual</title>
+        <productname>&PACKAGE_NAME;</productname>
+        <productnumber>&PACKAGE_VERSION;</productnumber>
+
+        <authorgroup>
+            <author>
+                <contrib>Developer</contrib>
+                <firstname>Jerko</firstname>
+                <surname>Steiner</surname>
+                <email>jerko.steiner+github@gmail.com</email>
+            </author>
+        </authorgroup>
+    </refentryinfo>
+
+    <refmeta>
+        <refentrytitle>j4status-inotify.conf</refentrytitle>
+        <manvolnum>5</manvolnum>
+    </refmeta>
+
+    <refnamediv>
+        <refname>j4status-inotify.conf</refname>
+        <refpurpose>j4status inotify plugin configuration</refpurpose>
+    </refnamediv>
+
+    <refsynopsisdiv>
+        <para>
+            Configuration for the inotify plugin
+        </para>
+        <para>
+            The inotify plugin uses the main j4status configuration file (see <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
+        </para>
+    </refsynopsisdiv>
+
+    <refsect1 id="description">
+        <title>Description</title>
+
+        <para>
+            It controls the inotify plugin behavior. The inotify plugin works
+            similar to the <varname>file-monitor</varname> plugin, however it
+            uses inotify instead of glib's file monitor. This means it works
+            only on Linux, but the main benefit is that it can react to inotify
+            events instantly. The events listened to are:
+            <varname>IN_MODIFY</varname> and <varname>IN_DELETE</varname>. For
+            each file defined in the configuration, a new subsection will be
+            created. After an IN_MODIFY event is received, the specific file is
+            read until a new line or a carriage return and displayed in the
+            section.
+        </para>
+
+        <para>
+            The inotify plugin will listen to events for all first-level files
+            in a specific directory, but a list of files to create sections for
+            must be given. You'll most probably want to have a file monitored
+            in a dedicated directory to avoid high CPU usage, preferably on a
+            tmpfs filesystem to avoid unecessary disk writes.
+        </para>
+
+    </refsect1>
+
+    <refsect1 id="sections">
+        <title>Sections</title>
+
+        <refsect2 id="section-inotify">
+            <title>Section <varname>[Inotify]</varname></title>
+
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <varname>Dir=</varname>
+                        (<type>directory where to watch for file changes</type>)
+                    </term>
+                    <listitem>
+                        <para>Default is <filename><varname>$XDG_RUNTIME_DIR</varname>/&PACKAGE_NAME;/inotify</filename>.</para>
+                    </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term>
+                        <varname>Files=</varname>
+                        (<type>list of file names in directory</type>)
+                    </term>
+                    <listitem>
+                        <para>Files to monitor in the plugin runtime directory, or the directory specified with <varname>Dir</varname>.</para>
+                    </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term>
+                        <varname>Labels=</varname>
+                        (<type>list of labels for each file</type>)
+                    </term>
+                    <listitem>
+                        <para>If not specified, file name will be used.</para>
+                    </listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term>
+                        <varname>Lengths=</varname>
+                        (<type>list of ints</type>)
+                    </term>
+                    <listitem>
+                        <para>Determines how much space to reserve for each value. Set to 0 if you want variable length for a specific value.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+
+    <refsect1 id="directory">
+        <title>Directory</title>
+
+        <variablelist>
+            <varlistentry>
+                <term><filename><varname>$XDG_RUNTIME_DIR</varname>/&PACKAGE_NAME;/inotify</filename></term>
+                <listitem>
+                    <para>The directory in which the plugin will search files.</para>
+                    <para>If <varname>$XDG_RUNTIME_DIR</varname> is not set, we use <varname>$XDG_CACHE_HOME</varname>, with a fallback to <filename>~/.cache</filename>.</para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+    </refsect1>
+
+    <refsect1 id="see-also">
+        <title>See Also</title>
+        <para>
+            <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+        </para>
+    </refsect1>
+</refentry>
