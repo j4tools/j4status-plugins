@@ -115,16 +115,6 @@
 
                 <varlistentry>
                     <term>
-                        <varname>Labels=</varname>
-                        (<type>list of labels for each file</type>)
-                    </term>
-                    <listitem>
-                        <para>If not specified, file name will be used.</para>
-                    </listitem>
-                </varlistentry>
-
-                <varlistentry>
-                    <term>
                         <varname>Lengths=</varname>
                         (<type>list of ints</type>)
                     </term>

@@ -8,7 +8,10 @@
 
 #include <glib.h>
 
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h> // read()
+#endif /* HAVE_UNISTD_H */
+
 #include <pthread.h>
 #include <sys/inotify.h>
 

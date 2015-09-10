@@ -141,7 +141,7 @@ _j4status_inotify_section_free(gpointer data)
 
 static J4statusInotifySection*
 _j4status_inotify_section_create(
-    J4statusPluginContext* context, char* file, char* label, gint length)
+    J4statusPluginContext* context, char* file, gint length)
 {
     J4statusInotifySection *section;
     section = g_new0(J4statusInotifySection, 1);
@@ -154,8 +154,7 @@ _j4status_inotify_section_create(
 
     j4status_section_set_name(section->section, "inotify");
     j4status_section_set_instance(section->section, g_strdup(file));
-    j4status_section_set_label(section->section,
-        g_strdup(label != NULL ? label : file));
+    j4status_section_set_label(section->section, g_strdup(file));
     g_idle_add(_j4status_inotify_section_update, section);
     g_idle_add(_j4status_inotify_section_set_state, section);
 
@@ -202,8 +201,6 @@ _j4status_inotify_init(J4statusCoreInterface *core)
         g_warning("inotify: No Files set to monitor, aborting");
         goto fail;
     }
-    gchar **labels;
-    labels = g_key_file_get_string_list(key_file, section, "Labels", NULL, NULL);
 
     gint *lengths;
     lengths = g_key_file_get_integer_list(key_file, section, "Lengths", NULL, NULL);
@@ -232,22 +229,16 @@ _j4status_inotify_init(J4statusCoreInterface *core)
     context->wd = wd;
 
     gchar **file;
-    gchar **label = labels;
     gint *length = lengths;
     for (file = files; *file != NULL; ++file) {
         gint sec_len = length != NULL ? *length : 0;
-        gchar* sec_label = label != NULL ? *label : NULL;
 
-        _j4status_inotify_section_create(context, *file, sec_label, sec_len);
-
-        if (label != NULL)
-            ++label;
+        _j4status_inotify_section_create(context, *file, sec_len);
 
         if (length != NULL)
             ++length;
     }
     g_strfreev(files);
-    g_strfreev(labels);
 
     if (context->sections == NULL) {
         g_free(context);
