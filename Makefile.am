@@ -77,6 +77,10 @@ if ENABLE_NM_INPUT
 include nm/nm.mk
 endif
 
+if ENABLE_NL_INPUT
+include nl/nl.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk
