@@ -16,7 +16,7 @@ alsa_alsa_la_CPPFLAGS = \
 
 alsa_alsa_la_CFLAGS = \
 	$(AM_CFLAGS) \
-	$(ALSA_PLUGIN_CFLAGS)
+	$(GW_ALSA_MIXER_CFLAGS)
 
 alsa_alsa_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
@@ -24,5 +24,5 @@ alsa_alsa_la_LDFLAGS = \
 
 alsa_alsa_la_LIBADD = \
 	$(J4STATUS_PLUGIN_LIBS) \
-	$(ALSA_PLUGIN_LIBS) \
+	$(GW_ALSA_MIXER_LIBS) \
 	-lm
