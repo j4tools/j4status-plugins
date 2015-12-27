@@ -73,6 +73,10 @@ if ENABLE_INOTIFY_INPUT
 include inotify/inotify.mk
 endif
 
+if ENABLE_NM_INPUT
+include nm/nm.mk
+endif
+
 include src/man.mk
 
 -include local-rules.mk
