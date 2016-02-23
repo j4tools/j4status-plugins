@@ -61,6 +61,7 @@ typedef struct
         ID_UUID,
         ID_LABEL,
         ID_DEVICE,
+	ID_MOUNTPOINT
       } id_t;
     gchar *id;
     gchar *device;
@@ -127,6 +128,9 @@ _j4status_fsinfo_section_locate_device(J4statusFSInfoSection *section,
             if (access(section->id, F_OK) >= 0)
                 section->device = g_strdup(section->id);
             break;
+        case ID_MOUNTPOINT:
+	    section->path = g_strdup(section->id);
+	    return TRUE;
         default:
             // not supposed to happen!
             return FALSE;
@@ -208,13 +212,22 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
     if (section->path)
       {
         if (statvfs(section->path, &stats) < 0)
+	  {
             //TODO: account for the possibility that device was unmounted
             // & mount point deleted since last check
             UPDATE_ERROR(ESTATVFS);
+	  }
         if (stats.f_fsid != section->fsid)
           {
-            g_free(section->path);
-            section->path = NULL;
+	    if (section->id_t == ID_MOUNTPOINT)
+	      {
+		section->fsid = stats.f_fsid;
+	      }
+	    else
+	      {
+		g_free(section->path);
+		section->path = NULL;
+	      }
           }
       }
     if (!section->path)
@@ -390,12 +403,22 @@ _j4status_fsinfo_init(J4statusCoreInterface *core)
                 section->id_t = ID_DEVICE;
             else
               {
-                g_warning("Could not locate device %s", names[idx]);
-                g_free(section);
-                g_free(group);
-                continue;
+		section->id = g_key_file_get_string(key_file, group, "Mountpoint",
+						    NULL);
+		if (section->id)
+		  {
+		    section->id_t = ID_MOUNTPOINT;
+		  }
               }
           }
+	if (!section->id)
+	  {
+	    g_warning("Could not locate device %s", names[idx]);
+	    g_free(section);
+	    g_free(group);
+	    continue;
+	  }
+
         gchar *format = g_key_file_get_locale_string(key_file, group,
                                                      "Format", NULL, NULL);
         g_free(group);

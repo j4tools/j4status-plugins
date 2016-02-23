@@ -217,6 +217,14 @@
                         <para>Path to storage device (e.g. "<literal>/dev/sda1</literal>").</para>
                     </listitem>
                 </varlistentry>
+		<varlistentry>
+		    <term>
+		        <varname>Mountpoint=</varname> (<type>path</type>)
+		    </term>
+		    <listitem>
+		        <para>Path to mountpoint (e.g. "<literal>/</literal>".</para>
+		    </listitem>
+		</varlistentry>
             </variablelist>
         </refsection>
     </refsection>
