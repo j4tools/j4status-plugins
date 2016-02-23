@@ -191,8 +191,6 @@ print_disk_size(fsblkcnt_t blocks, gulong bsize)
  * Unmounted/unplugged devices are also reported
  * (Referenced above as section_update)
  */
-#include <errno.h>
-#include <string.h>
 static void
 _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
 {
