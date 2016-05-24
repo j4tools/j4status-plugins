@@ -353,7 +353,7 @@ _j4status_nl_init(J4statusCoreInterface *core)
         return NULL;
     }
 
-    gint err;
+    gint err = 0;
     J4statusPluginContext *self;
 
     self = g_new0(J4statusPluginContext, 1);
