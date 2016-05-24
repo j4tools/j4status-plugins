@@ -108,6 +108,12 @@ _j4status_nl_format_up_callback(const gchar *token, guint64 value, gconstpointer
     return NULL;
 }
 
+static const gchar *
+_j4status_nl_format_down_callback(const gchar *token, guint64 value, gconstpointer user_data)
+{
+    return NULL;
+}
+
 static gsize
 _j4status_nl_section_append_addresses(gchar *str, gsize size, GList *list)
 {
@@ -178,7 +184,8 @@ _j4status_nl_section_update(J4statusNlSection *self)
     else if ( ! ( flags & IFF_RUNNING ) )
     {
         state = J4STATUS_STATE_BAD;
-        value = j4status_format_string_replace(self->context->formats.down, NULL, NULL);
+        value = j4status_format_string_replace(self->context->formats.down, _j4status_nl_format_down_callback, NULL);
+        g_debug("DOWN");
         _j4status_nl_section_free_addresses(self);
     }
     else if ( ( self->ipv4_addresses == NULL ) && ( self->ipv6_addresses == NULL ) )
