@@ -119,8 +119,7 @@ _j4status_nl_section_append_addresses(gchar *str, gsize size, GList *list)
         nl_addr2str(rtnl_addr_get_local(addr->data), str + o, size - o);
         p = g_utf8_strchr(str + o, -1, '/');
         g_assert_nonnull(p); /* We know libnl wrote the prefix length */
-        *p = '\0';
-        o += p - str;
+        o = p - str;
         o += g_snprintf(str + o, size - o, ", ");
     }
     return o;
