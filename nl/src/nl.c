@@ -154,10 +154,10 @@ _j4status_nl_section_get_addresses(J4statusNlSection *self)
 static void
 _j4status_nl_section_free_addresses(J4statusNlSection *self)
 {
-        g_list_free_full(self->ipv4_addresses, (GDestroyNotify) rtnl_addr_put);
-        g_list_free_full(self->ipv6_addresses, (GDestroyNotify) rtnl_addr_put);
-        self->ipv4_addresses = NULL;
-        self->ipv6_addresses = NULL;
+    g_list_free_full(self->ipv4_addresses, (GDestroyNotify) nl_addr_put);
+    g_list_free_full(self->ipv6_addresses, (GDestroyNotify) nl_addr_put);
+    self->ipv4_addresses = NULL;
+    self->ipv6_addresses = NULL;
 }
 
 static void
@@ -292,7 +292,6 @@ _j4status_nl_cache_change(struct nl_cache *cache, struct nl_object *object, int 
             rtnl_link_put(section->link);
             section->link = link;
         }
-
     }
     else if ( cache == self->addr_cache )
     {
