@@ -217,8 +217,10 @@ _j4status_nl_address_compare(gconstpointer a, gconstpointer b)
 }
 
 static void
-_j4status_nl_section_add_address(J4statusNlSection *self, struct nl_addr *addr)
+_j4status_nl_section_add_address(J4statusNlSection *self, struct rtnl_addr *rtaddr)
 {
+    struct nl_addr *addr;
+    addr = rtnl_addr_get_local(rtaddr);
     GList **list;
     switch ( nl_addr_get_family(addr) )
     {
@@ -303,7 +305,7 @@ _j4status_nl_section_new(J4statusPluginContext *context, J4statusCoreInterface *
     {
         struct rtnl_addr *addr = nl_object_priv(object);
         if ( rtnl_addr_get_ifindex(addr) == self->ifindex )
-            _j4status_nl_section_add_address(self, rtnl_addr_get_local(addr));
+            _j4status_nl_section_add_address(self, addr);
     }
 
     _j4status_nl_section_update(self);
@@ -341,7 +343,7 @@ _j4status_nl_cache_change(struct nl_cache *cache, struct nl_object *object, int 
             return;
         g_debug("Addr cache update: %p = %d", object, rtnl_addr_get_ifindex(addr));
 
-        _j4status_nl_section_add_address(section, rtnl_addr_get_local(addr));
+        _j4status_nl_section_add_address(section, addr);
     }
     else
         g_assert_not_reached();
