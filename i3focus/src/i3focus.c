@@ -37,6 +37,9 @@ _j4status_i3focus_section_free(gpointer data)
     j4status_section_free(section->section);
     g_object_unref(section->con);
 
+    if ( section == section->context->focus )
+        section->context->focus = NULL;
+
     g_slice_free(J4statusI3focusSection, section);
 }
 
@@ -76,7 +79,6 @@ _j4status_i3focus_section_set_colour(J4statusI3focusSection *section)
     j4status_section_set_colour(section->section, colour);
 }
 
-
 static void
 _j4status_i3focus_section_set_focus(J4statusI3focusSection *section)
 {
@@ -87,20 +89,60 @@ _j4status_i3focus_section_set_focus(J4statusI3focusSection *section)
     _j4status_i3focus_section_set_colour(section);
 }
 
+static void
+_j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window)
+{
+    gulong id;
+    gchar id_str[20];
+
+    g_object_get(window, "id", &id, NULL);
+    g_snprintf(id_str, sizeof(id_str), "%lu", id);
+
+    J4statusI3focusSection *section = g_slice_new0(J4statusI3focusSection);
+    section->context = context;
+    section->con = g_object_ref(window);
+
+    section->section = j4status_section_new(context->core);
+    j4status_section_set_name(section->section, "i3focus");
+    j4status_section_set_instance(section->section, id_str);
+    j4status_section_set_action_callback(section->section, _j4status_i3focus_section_callback, section);
+    if ( ! j4status_section_insert(section->section) )
+        _j4status_i3focus_section_free(section);
+    else
+    {
+        j4status_section_set_value(section->section, g_strdup(i3ipc_con_get_name(window)));
+        _j4status_i3focus_section_set_colour(section);
+
+        context->sections = g_list_prepend(context->sections, section);
+    }
+}
 
 static void
 _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEvent *event, gpointer user_data)
 {
     J4statusPluginContext *context = user_data;
-    GList *section;
+    GList *section_;
 
-    if ( g_strcmp0(event->change, "focus") != 0 )
-        return;
-
-    section = g_list_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
-    if ( section == NULL )
-        return;
-    _j4status_i3focus_section_set_focus(section->data);
+    if ( g_strcmp0(event->change, "focus") == 0 )
+    {
+        section_ = g_list_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
+        if ( section_ == NULL )
+            return;
+        _j4status_i3focus_section_set_focus(section_->data);
+    }
+    else if ( g_strcmp0(event->change, "new") == 0 )
+    {
+        _j4status_i3focus_section_new(context, event->container);
+    }
+    else if ( g_strcmp0(event->change, "close") == 0 )
+    {
+        section_ = g_list_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
+        if ( section_ == NULL )
+            return;
+        J4statusI3focusSection *section = section_->data;
+        context->sections = g_list_delete_link(context->sections, section_);
+        _j4status_i3focus_section_free(section);
+    }
 }
 
 
@@ -118,36 +160,7 @@ _j4status_i3focus_workspace_callback(G_GNUC_UNUSED GObject *object, i3ipcWorkspa
         context->focus = NULL;
 
         for ( window_ = g_list_last(windows) ; window_ != NULL ; window_ = g_list_previous(window_) )
-        {
-            i3ipcCon *window = window_->data;
-            gulong id;
-            gchar id_str[20];
-
-            g_object_get(window, "id", &id, NULL);
-            g_snprintf(id_str, sizeof(id_str), "%lu", id);
-
-            J4statusI3focusSection *section = g_slice_new0(J4statusI3focusSection);
-            section->context = context;
-            section->con = g_object_ref(window);
-
-            section->section = j4status_section_new(context->core);
-            j4status_section_set_name(section->section, "i3focus");
-            j4status_section_set_instance(section->section, id_str);
-            j4status_section_set_action_callback(section->section, _j4status_i3focus_section_callback, section);
-            if ( ! j4status_section_insert(section->section) )
-                _j4status_i3focus_section_free(section);
-            else
-            {
-                gboolean focused;
-                g_object_get(section->con, "focused", &focused, NULL);
-                j4status_section_set_value(section->section, g_strdup(i3ipc_con_get_name(window)));
-                if ( focused )
-                    _j4status_i3focus_section_set_focus(section);
-                _j4status_i3focus_section_set_colour(section);
-
-                context->sections = g_list_prepend(context->sections, section);
-            }
-        }
+            _j4status_i3focus_section_new(context, window_->data);
         g_list_free(windows);
     }
 }
