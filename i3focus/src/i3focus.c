@@ -27,6 +27,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif /* HAVE_ERRNO_H */
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif /* HAVE_STRING_H */
 
 #include <glib.h>
 #include <glib/gprintf.h>
@@ -45,6 +48,7 @@ typedef struct {
 struct _J4statusPluginContext {
     J4statusCoreInterface *core;
     i3ipcConnection *connection;
+    gint64 max_width;
     GList *sections;
     J4statusI3focusSection *focus;
 };
@@ -126,12 +130,18 @@ _j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window)
     section->section = j4status_section_new(context->core);
     j4status_section_set_name(section->section, "i3focus");
     j4status_section_set_instance(section->section, id_str);
+    if ( context->max_width != 0 )
+        j4status_section_set_max_width(section->section, context->max_width);
     j4status_section_set_action_callback(section->section, _j4status_i3focus_section_callback, section);
     if ( ! j4status_section_insert(section->section) )
         _j4status_i3focus_section_free(section);
     else
     {
-        j4status_section_set_value(section->section, g_strdup(i3ipc_con_get_name(window)));
+        const gchar *name = i3ipc_con_get_name(window);
+        gsize l = strlen(name), max = l;
+        if ( context->max_width != 0 )
+            max = ABS(context->max_width);
+        j4status_section_set_value(section->section, g_strndup(name, MIN(l, max)));
         _j4status_i3focus_section_set_colour(section);
 
         context->sections = g_list_prepend(context->sections, section);
@@ -228,6 +238,12 @@ _j4status_i3focus_init(J4statusCoreInterface *core)
 
     g_signal_connect(context->connection, "window", G_CALLBACK(_j4status_i3focus_window_callback), context);
     g_signal_connect(context->connection, "workspace", G_CALLBACK(_j4status_i3focus_workspace_callback), context);
+
+    GKeyFile *key_file = j4status_config_get_key_file("i3focus");
+    if ( key_file != NULL )
+    {
+        context->max_width = g_key_file_get_int64(key_file, "i3focus", "MaxWidth", NULL);
+    }
 
     return context;
 }

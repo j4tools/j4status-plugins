@@ -1,6 +1,9 @@
 plugins_LTLIBRARIES += \
 	i3focus/i3focus.la
 
+man5_MANS += \
+	i3focus/man/j4status-i3focus.conf.5
+
 
 i3focus_i3focus_la_SOURCES = \
 	i3focus/src/i3focus.c
