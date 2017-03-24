@@ -48,7 +48,7 @@ AC_SUBST([pkgdatadir])
 PKG_INSTALLDIR
 
 
-AM_CFLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"
+AM_CFLAGS="-Wall -Wextra"
 AM_CPPFLAGS=""
 AM_LDFLAGS="-no-undefined -Wl,--no-undefined"
 AM_XSLTPROCFLAGS="--nonet --stringparam man.output.quietly 1 --stringparam funcsynopsis.style ansi"
