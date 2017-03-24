@@ -172,7 +172,7 @@ _j4status_alsa_section_free(gpointer data)
     j4status_section_free(section->section);
 
     snd_mixer_free(section->mixer);
-    g_water_alsa_mixer_source_unref(section->source);
+    g_water_alsa_mixer_source_free(section->source);
 
     g_free(section->card);
 
@@ -202,7 +202,7 @@ _j4status_alsa_section_new(J4statusCoreInterface *core, gchar *card)
     if ( error < 0 )
     {
         g_warning("Couldn't register ALSA mixer to card %s: %s", card, snd_strerror(error));
-        g_water_alsa_mixer_source_unref(section->source);
+        g_water_alsa_mixer_source_free(section->source);
         g_free(section->card);
         g_free(section);
         return NULL;
