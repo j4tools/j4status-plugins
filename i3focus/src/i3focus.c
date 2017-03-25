@@ -42,7 +42,7 @@
 typedef struct {
     J4statusPluginContext *context;
     J4statusSection *section;
-    i3ipcCon *con;
+    gulong id;
 } J4statusI3focusSection;
 
 struct _J4statusPluginContext {
@@ -60,7 +60,6 @@ _j4status_i3focus_section_free(gpointer data)
     J4statusI3focusSection *section = data;
 
     j4status_section_free(section->section);
-    g_object_unref(section->con);
 
     if ( section == section->context->focus )
         section->context->focus = NULL;
@@ -72,8 +71,9 @@ static void
 _j4status_i3focus_section_callback(G_GNUC_UNUSED J4statusSection *section_, G_GNUC_UNUSED const gchar *event_id, gpointer user_data)
 {
     J4statusI3focusSection *section = user_data;
-
-    i3ipc_con_command(section->con, "focus", NULL);
+    gchar command[60];
+    g_snprintf(command, sizeof(command), "[con_id=\"%lu\"] focus", section->id);
+    i3ipc_connection_command(section->context->connection, command, NULL);
 }
 
 static gint
@@ -81,11 +81,10 @@ _j4status_i3focus_section_search(gconstpointer a, gconstpointer b)
 {
     const J4statusI3focusSection *section = a;
     i3ipcCon *con = (i3ipcCon *) b;
-    gulong ida, idb;
-    g_object_get(section->con, "id", &ida, NULL);
-    g_object_get(con, "id", &idb, NULL);
+    gulong id;
+    g_object_get(con, "id", &id, NULL);
 
-    return ( ida == idb ) ? 0 : -1;
+    return ( section->id == id ) ? 0 : -1;
 }
 
 
@@ -125,7 +124,7 @@ _j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window)
 
     J4statusI3focusSection *section = g_slice_new0(J4statusI3focusSection);
     section->context = context;
-    section->con = g_object_ref(window);
+    section->id = id;
 
     section->section = j4status_section_new(context->core);
     j4status_section_set_name(section->section, "i3focus");
