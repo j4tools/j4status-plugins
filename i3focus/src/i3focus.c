@@ -194,9 +194,11 @@ _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEven
         J4statusI3focusSection *section = section_->data;
         g_queue_delete_link(context->sections, section_);
         _j4status_i3focus_section_free(section);
-        if ( context->max_total_width > 0 )
-            context->max_width = context->max_total_width / ( g_queue_get_length(context->sections) + 1 );
-        g_queue_foreach(context->sections, (GFunc) _j4status_i3focus_section_set_value, NULL);
+        if ( ( context->max_total_width > 0 ) && ( ! g_queue_is_empty(context->sections) ) )
+        {
+            context->max_width = context->max_total_width / g_queue_get_length(context->sections);
+            g_queue_foreach(context->sections, (GFunc) _j4status_i3focus_section_set_value, NULL);
+        }
     }
 }
 
@@ -214,7 +216,7 @@ _j4status_i3focus_workspace_callback(G_GNUC_UNUSED GObject *object, i3ipcWorkspa
         g_queue_clear(context->sections);
         context->focus = NULL;
 
-        if ( context->max_total_width != 0 )
+        if ( ( context->max_total_width > 0 ) && ( windows != NULL ) )
             context->max_width = context->max_total_width / g_list_length(windows);
         for ( window_ = g_list_last(windows) ; window_ != NULL ; window_ = g_list_previous(window_) )
             _j4status_i3focus_section_new(context, window_->data);
