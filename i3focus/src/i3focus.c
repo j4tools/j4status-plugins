@@ -42,14 +42,16 @@
 typedef struct {
     J4statusPluginContext *context;
     J4statusSection *section;
+    gchar *name;
     gulong id;
 } J4statusI3focusSection;
 
 struct _J4statusPluginContext {
     J4statusCoreInterface *core;
     i3ipcConnection *connection;
-    gint64 max_width;
-    GList *sections;
+    guint64 max_width;
+    guint64 max_total_width;
+    GQueue *sections;
     J4statusI3focusSection *focus;
 };
 
@@ -114,6 +116,20 @@ _j4status_i3focus_section_set_focus(J4statusI3focusSection *section)
 }
 
 static void
+_j4status_i3focus_section_set_value(gpointer data, gconstpointer user_data)
+{
+    J4statusI3focusSection *section = data;
+    guint64 max_width = section->context->max_width;
+    const gchar *new_name = user_data;
+    if ( new_name != NULL )
+    {
+        g_free(section->name);
+        section->name = g_strdup(new_name);
+    }
+    j4status_section_set_value(section->section, ( max_width != 0 ) ? g_strndup(section->name, max_width) : g_strdup(section->name));
+}
+
+static void
 _j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window)
 {
     gulong id;
@@ -129,21 +145,16 @@ _j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window)
     section->section = j4status_section_new(context->core);
     j4status_section_set_name(section->section, "i3focus");
     j4status_section_set_instance(section->section, id_str);
-    if ( context->max_width != 0 )
-        j4status_section_set_max_width(section->section, context->max_width);
     j4status_section_set_action_callback(section->section, _j4status_i3focus_section_callback, section);
     if ( ! j4status_section_insert(section->section) )
         _j4status_i3focus_section_free(section);
     else
     {
-        const gchar *name = i3ipc_con_get_name(window);
-        gsize l = strlen(name), max = l;
-        if ( context->max_width != 0 )
-            max = ABS(context->max_width);
-        j4status_section_set_value(section->section, g_strndup(name, MIN(l, max)));
+        section->name = g_strdup(i3ipc_con_get_name(window));
+        _j4status_i3focus_section_set_value(section, i3ipc_con_get_name(window));
         _j4status_i3focus_section_set_colour(section);
 
-        context->sections = g_list_prepend(context->sections, section);
+        g_queue_push_head(context->sections, section);
     }
 }
 
@@ -155,35 +166,37 @@ _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEven
 
     if ( g_strcmp0(event->change, "focus") == 0 )
     {
-        section_ = g_list_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
+        section_ = g_queue_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
         if ( section_ == NULL )
             return;
         _j4status_i3focus_section_set_focus(section_->data);
     }
     else if ( g_strcmp0(event->change, "title") == 0 )
     {
-        section_ = g_list_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
+        section_ = g_queue_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
         if ( section_ == NULL )
             return;
         J4statusI3focusSection *section = section_->data;
-        const gchar *name = i3ipc_con_get_name(event->container);
-        gsize l = strlen(name), max = l;
-        if ( context->max_width != 0 )
-            max = ABS(context->max_width);
-        j4status_section_set_value(section->section, g_strndup(name, MIN(l, max)));
+        _j4status_i3focus_section_set_value(section, i3ipc_con_get_name(event->container));
     }
     else if ( g_strcmp0(event->change, "new") == 0 )
     {
+        if ( context->max_total_width > 0 )
+            context->max_width = context->max_total_width / ( g_queue_get_length(context->sections) + 1 );
+        g_queue_foreach(context->sections, (GFunc) _j4status_i3focus_section_set_value, NULL);
         _j4status_i3focus_section_new(context, event->container);
     }
     else if ( g_strcmp0(event->change, "close") == 0 )
     {
-        section_ = g_list_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
+        section_ = g_queue_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
         if ( section_ == NULL )
             return;
         J4statusI3focusSection *section = section_->data;
-        context->sections = g_list_delete_link(context->sections, section_);
+        g_queue_delete_link(context->sections, section_);
         _j4status_i3focus_section_free(section);
+        if ( context->max_total_width > 0 )
+            context->max_width = context->max_total_width / ( g_queue_get_length(context->sections) + 1 );
+        g_queue_foreach(context->sections, (GFunc) _j4status_i3focus_section_set_value, NULL);
     }
 }
 
@@ -197,10 +210,12 @@ _j4status_i3focus_workspace_callback(G_GNUC_UNUSED GObject *object, i3ipcWorkspa
     {
         GList *windows = i3ipc_con_leaves(event->current), *window_;
 
-        g_list_free_full(context->sections, _j4status_i3focus_section_free);
-        context->sections = NULL;
+        g_queue_foreach(context->sections, (GFunc) _j4status_i3focus_section_free, NULL);
+        g_queue_clear(context->sections);
         context->focus = NULL;
 
+        if ( context->max_total_width != 0 )
+            context->max_width = context->max_total_width / g_list_length(windows);
         for ( window_ = g_list_last(windows) ; window_ != NULL ; window_ = g_list_previous(window_) )
             _j4status_i3focus_section_new(context, window_->data);
         g_list_free(windows);
@@ -247,13 +262,17 @@ _j4status_i3focus_init(J4statusCoreInterface *core)
     context->core = core;
     context->connection = connection;
 
+    context->sections = g_queue_new();
+
     g_signal_connect(context->connection, "window", G_CALLBACK(_j4status_i3focus_window_callback), context);
     g_signal_connect(context->connection, "workspace", G_CALLBACK(_j4status_i3focus_workspace_callback), context);
 
     GKeyFile *key_file = j4status_config_get_key_file("i3focus");
     if ( key_file != NULL )
     {
-        context->max_width = g_key_file_get_int64(key_file, "i3focus", "MaxWidth", NULL);
+        context->max_total_width = g_key_file_get_uint64(key_file, "i3focus", "MaxTotalWidth", NULL);
+        if ( context->max_total_width == 0 )
+            context->max_width = g_key_file_get_uint64(key_file, "i3focus", "MaxWidth", NULL);
     }
 
     return context;
@@ -262,7 +281,7 @@ _j4status_i3focus_init(J4statusCoreInterface *core)
 static void
 _j4status_i3focus_uninit(J4statusPluginContext *context)
 {
-    g_list_free_full(context->sections, _j4status_i3focus_section_free);
+    g_queue_free_full(context->sections, _j4status_i3focus_section_free);
 
     g_object_unref(context->connection);
 

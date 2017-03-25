@@ -77,11 +77,21 @@
             <variablelist>
                 <varlistentry>
                     <term>
+                        <varname>MaxTotalWidth=</varname>
+                        (A <type>positive integer</type>, defaults to <literal>0</literal>, infinite)
+                    </term>
+                    <listitem>
+                        <para>The maximum number of characters to use in total for window titles (not counting separators).</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
                         <varname>MaxWidth=</varname>
-                        (An <type>integer</type>, defaults to <literal>0</literal>, infinite)
+                        (A <type>positive integer</type>, defaults to <literal>0</literal>, infinite)
                     </term>
                     <listitem>
                         <para>The maximum number of characters from the window title to use.</para>
+                        <para>It is ignored if <varname>MaxTotalWidth=</varname> is set.</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
