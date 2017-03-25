@@ -160,6 +160,18 @@ _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEven
             return;
         _j4status_i3focus_section_set_focus(section_->data);
     }
+    else if ( g_strcmp0(event->change, "title") == 0 )
+    {
+        section_ = g_list_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
+        if ( section_ == NULL )
+            return;
+        J4statusI3focusSection *section = section_->data;
+        const gchar *name = i3ipc_con_get_name(event->container);
+        gsize l = strlen(name), max = l;
+        if ( context->max_width != 0 )
+            max = ABS(context->max_width);
+        j4status_section_set_value(section->section, g_strndup(name, MIN(l, max)));
+    }
     else if ( g_strcmp0(event->change, "new") == 0 )
     {
         _j4status_i3focus_section_new(context, event->container);
