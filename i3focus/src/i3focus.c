@@ -131,7 +131,7 @@ _j4status_i3focus_section_set_value(gpointer data, gconstpointer user_data)
         else
             section->name = g_strndup(new_name, e - new_name);
     }
-    j4status_section_set_value(section->section, ( max_width != 0 ) ? g_strndup(section->name, max_width) : g_strdup(section->name));
+    j4status_section_set_value(section->section, ( max_width != 0 ) ? g_utf8_substring(section->name, 0, max_width) : g_strdup(section->name));
 }
 
 static void
