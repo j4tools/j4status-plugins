@@ -44,11 +44,13 @@ typedef struct {
     J4statusSection *section;
     gchar *name;
     gulong id;
+    gsize i;
 } J4statusI3focusSection;
 
 struct _J4statusPluginContext {
     J4statusCoreInterface *core;
     i3ipcConnection *connection;
+    gboolean tabs_mode;
     guint64 max_width;
     guint64 max_total_width;
     GQueue *sections;
@@ -93,15 +95,27 @@ _j4status_i3focus_section_search(gconstpointer a, gconstpointer b)
 static void
 _j4status_i3focus_section_set_colour(J4statusI3focusSection *section)
 {
-    gboolean focused = ( section == section->context->focus );
+    guint8 value;
+    if ( section == section->context->focus )
+        value = 0xff;
+    else if ( ( section->i % 2 ) == 0 )
+        value = 0x55;
+    else
+        value = 0xaa;
+
     J4statusColour colour = {
         .set = TRUE,
-        .red = focused ? 0xff : 0x7f,
-        .green = focused ? 0xff : 0x7f,
-        .blue = focused ? 0xff : 0x7f,
+        .red = value,
+        .green = value,
+        .blue = value,
         .alpha = 0xff
     };
 
+    if ( section->context->tabs_mode )
+    {
+        j4status_section_set_background_colour(section->section, colour);
+        colour.red = colour.green = colour.blue = 0x00;
+    }
     j4status_section_set_colour(section->section, colour);
 }
 
@@ -135,7 +149,7 @@ _j4status_i3focus_section_set_value(gpointer data, gconstpointer user_data)
 }
 
 static void
-_j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window)
+_j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window, gsize i)
 {
     gulong id;
     gchar id_str[20];
@@ -146,6 +160,7 @@ _j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window)
     J4statusI3focusSection *section = g_slice_new0(J4statusI3focusSection);
     section->context = context;
     section->id = id;
+    section->i = i;
 
     section->section = j4status_section_new(context->core);
     j4status_section_set_name(section->section, "i3focus");
@@ -186,10 +201,11 @@ _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEven
     }
     else if ( g_strcmp0(event->change, "new") == 0 )
     {
+        gsize length = g_queue_get_length(context->sections);
         if ( context->max_total_width > 0 )
-            context->max_width = context->max_total_width / ( g_queue_get_length(context->sections) + 1 );
+            context->max_width = context->max_total_width / ( length + 1 );
         g_queue_foreach(context->sections, (GFunc) _j4status_i3focus_section_set_value, NULL);
-        _j4status_i3focus_section_new(context, event->container);
+        _j4status_i3focus_section_new(context, event->container, g_queue_get_length(context->sections));
     }
     else if ( g_strcmp0(event->change, "close") == 0 )
     {
@@ -223,8 +239,9 @@ _j4status_i3focus_workspace_callback(G_GNUC_UNUSED GObject *object, i3ipcWorkspa
 
         if ( ( context->max_total_width > 0 ) && ( windows != NULL ) )
             context->max_width = context->max_total_width / g_list_length(windows);
+        gsize i = 0;
         for ( window_ = g_list_last(windows) ; window_ != NULL ; window_ = g_list_previous(window_) )
-            _j4status_i3focus_section_new(context, window_->data);
+            _j4status_i3focus_section_new(context, window_->data, i++);
         g_list_free(windows);
     }
 }
@@ -277,6 +294,7 @@ _j4status_i3focus_init(J4statusCoreInterface *core)
     GKeyFile *key_file = j4status_config_get_key_file("i3focus");
     if ( key_file != NULL )
     {
+        context->tabs_mode = g_key_file_get_boolean(key_file, "i3focus", "TabsMode", NULL);
         context->max_total_width = g_key_file_get_uint64(key_file, "i3focus", "MaxTotalWidth", NULL);
         if ( context->max_total_width == 0 )
             context->max_width = g_key_file_get_uint64(key_file, "i3focus", "MaxWidth", NULL);

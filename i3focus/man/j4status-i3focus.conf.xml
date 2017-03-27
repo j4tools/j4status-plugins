@@ -94,6 +94,15 @@
                         <para>It is ignored if <varname>MaxTotalWidth=</varname> is set.</para>
                     </listitem>
                 </varlistentry>
+                <varlistentry>
+                    <term>
+                        <varname>TabsMode=</varname>
+                        (A <type>boolean</type>, defaults to <literal>false</literal>)
+                    </term>
+                    <listitem>
+                        <para>In tabs mode, the plugin will set the background colour to a shade of while/grey and the text in black.</para>
+                    </listitem>
+                </varlistentry>
             </variablelist>
         </refsect2>
     </refsect1>
