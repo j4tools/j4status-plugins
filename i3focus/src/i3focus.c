@@ -125,7 +125,7 @@ _j4status_i3focus_section_set_value(gpointer data, gconstpointer user_data)
     {
         g_free(section->name);
 
-        gchar *e;
+        const gchar *e;
         if ( g_utf8_validate(new_name, -1, &e) )
             section->name = g_strdup(new_name);
         else
