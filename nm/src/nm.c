@@ -126,9 +126,9 @@ typedef struct {
 #define J4STATUS_NM_FORMAT_APS_SIZE (10+1)
 
 
-#define J4STATUS_NM_DEFAULT_FORMAT_UP_ETH "${addresses}${ (<speed>b/s)}"
-#define J4STATUS_NM_DEFAULT_FORMAT_UP_WIFI "${addresses} (${strength>% }${at <ssid>, }${bitrate}b/s)"
-#define J4STATUS_NM_DEFAULT_FORMAT_DOWN_WIFI "Down${ (<aps> APs)}"
+#define J4STATUS_NM_DEFAULT_FORMAT_UP_ETH "${addresses}${speed/^.+$/ (\0b/s)}"
+#define J4STATUS_NM_DEFAULT_FORMAT_UP_WIFI "${addresses} (${strength}${strength:+% }${ssid/^.+$/at \0, }${bitrate}b/s)"
+#define J4STATUS_NM_DEFAULT_FORMAT_DOWN_WIFI "Down${aps/^.+$/ (\0 APs)}"
 #define J4STATUS_NM_DEFAULT_FORMAT_UP_OTHER "${addresses}"
 #define J4STATUS_NM_DEFAULT_FORMAT_DOWN_OTHER "Down"
 
@@ -179,7 +179,7 @@ typedef struct {
 } J4statusNmSection;
 
 static const gchar *
-_j4status_nm_format_up_eth_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_up_eth_callback(const gchar *token, guint64 value, const gchar *key, gint64 index, gconstpointer user_data)
 {
     const J4statusNmFormatUpEthData *data = user_data;
     switch ( value )
@@ -197,7 +197,7 @@ _j4status_nm_format_up_eth_callback(const gchar *token, guint64 value, gconstpoi
 }
 
 static const gchar *
-_j4status_nm_format_up_wifi_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_up_wifi_callback(const gchar *token, guint64 value, const gchar *key, gint64 index, gconstpointer user_data)
 {
     const J4statusNmFormatUpWiFiData *data = user_data;
     switch ( value )
@@ -221,7 +221,7 @@ _j4status_nm_format_up_wifi_callback(const gchar *token, guint64 value, gconstpo
 }
 
 static const gchar *
-_j4status_nm_format_down_wifi_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_down_wifi_callback(const gchar *token, guint64 value, const gchar *key, gint64 index, gconstpointer user_data)
 {
     switch ( value )
     {
@@ -235,7 +235,7 @@ _j4status_nm_format_down_wifi_callback(const gchar *token, guint64 value, gconst
 }
 
 static const gchar *
-_j4status_nm_format_up_other_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_up_other_callback(const gchar *token, guint64 value, const gchar *key, gint64 index, gconstpointer user_data)
 {
     switch ( value )
     {
@@ -249,7 +249,7 @@ _j4status_nm_format_up_other_callback(const gchar *token, guint64 value, gconstp
 }
 
 static const gchar *
-_j4status_nm_format_down_other_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_down_other_callback(const gchar *token, guint64 value, const gchar *key, gint64 index, gconstpointer user_data)
 {
     return NULL;
 }

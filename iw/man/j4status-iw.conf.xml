@@ -97,7 +97,7 @@
                     </term>
                     <listitem>
                         <para>What to display.</para>
-                        <para>Defaults to "<literal>${ip&gt; @ }${essid}${: &lt;quality&gt;%}</literal>".</para>
+                        <para>Defaults to "<literal>${ip}${ip:+ @ }${essid}${quality/^.+$/: \0%}</literal>".</para>
                         <para><varname>reference</varname> can be:</para>
                         <variablelist>
                             <varlistentry>

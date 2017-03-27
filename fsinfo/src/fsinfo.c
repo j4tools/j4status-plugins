@@ -144,6 +144,7 @@ _j4status_fsinfo_section_locate_device(J4statusFSInfoSection *section,
  */
 static const gchar *
 _j4status_fsinfo_format_callback(const gchar *token, guint64 value,
+                                 const gchar *key, gint64 index,
                                  gconstpointer user_data)
 {
     gchar *const *fdata = user_data;

@@ -92,6 +92,7 @@ static const gchar * const _j4status_iw_tokens[] =
  */
 static const gchar *
 _j4status_iw_format_callback(const gchar *token, guint64 value,
+                             const gchar *key, gint64 index,
                              gconstpointer user_data)
 {
     gchar *const *fdata = user_data;
@@ -242,7 +243,7 @@ static J4statusPluginContext *
 _j4status_iw_init(J4statusCoreInterface *core)
 {
     const gchar WIRELESS[] = "Wireless";
-    const gchar FORMAT_DEFAULT[] = "${ip> @ }${essid}${: <quality>%}";
+    const gchar FORMAT_DEFAULT[] = "${ip}${ip:+ @ }${essid}${quality/^.+$/: \0%}";
 
     GKeyFile *key_file = j4status_config_get_key_file(WIRELESS);
     if (!key_file)
