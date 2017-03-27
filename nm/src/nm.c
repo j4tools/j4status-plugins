@@ -126,9 +126,9 @@ typedef struct {
 #define J4STATUS_NM_FORMAT_APS_SIZE (10+1)
 
 
-#define J4STATUS_NM_DEFAULT_FORMAT_UP_ETH "${addresses}${speed/^.+$/ (\0b/s)}"
-#define J4STATUS_NM_DEFAULT_FORMAT_UP_WIFI "${addresses} (${strength}${strength:+% }${ssid/^.+$/at \0, }${bitrate}b/s)"
-#define J4STATUS_NM_DEFAULT_FORMAT_DOWN_WIFI "Down${aps/^.+$/ (\0 APs)}"
+#define J4STATUS_NM_DEFAULT_FORMAT_UP_ETH "${addresses}${speed/^.+$/ (\\0b/s)}"
+#define J4STATUS_NM_DEFAULT_FORMAT_UP_WIFI "${addresses} (${strength}${strength:+% }${ssid/^.+$/at \\0, }${bitrate}b/s)"
+#define J4STATUS_NM_DEFAULT_FORMAT_DOWN_WIFI "Down${aps/^.+$/ (\\0 APs)}"
 #define J4STATUS_NM_DEFAULT_FORMAT_UP_OTHER "${addresses}"
 #define J4STATUS_NM_DEFAULT_FORMAT_DOWN_OTHER "Down"
 
