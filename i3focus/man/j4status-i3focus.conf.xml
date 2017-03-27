@@ -100,7 +100,7 @@
                         (A <type>boolean</type>, defaults to <literal>false</literal>)
                     </term>
                     <listitem>
-                        <para>In tabs mode, the plugin will set the background colour to a shade of while/grey and the text in black.</para>
+                        <para>In tabs mode, the plugin will set the background colour to a shade of grey instead of the text.</para>
                     </listitem>
                 </varlistentry>
             </variablelist>

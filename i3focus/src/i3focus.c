@@ -113,10 +113,11 @@ _j4status_i3focus_section_set_colour(J4statusI3focusSection *section)
 
     if ( section->context->tabs_mode )
     {
+        colour.red = colour.green = colour.blue = 0xff - value;
         j4status_section_set_background_colour(section->section, colour);
-        colour.red = colour.green = colour.blue = 0x00;
     }
-    j4status_section_set_colour(section->section, colour);
+    else
+        j4status_section_set_colour(section->section, colour);
 }
 
 static void
