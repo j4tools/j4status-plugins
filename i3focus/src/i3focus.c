@@ -50,6 +50,7 @@ typedef struct {
 struct _J4statusPluginContext {
     J4statusCoreInterface *core;
     i3ipcConnection *connection;
+    gboolean focus_only;
     gboolean tabs_mode;
     guint64 max_width;
     guint64 max_total_width;
@@ -187,11 +188,23 @@ _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEven
 
     if ( g_strcmp0(event->change, "focus") == 0 )
     {
+        if ( context->focus_only )
+        {
+            if ( context->focus != NULL )
+            {
+                g_queue_pop_head(context->sections);
+                _j4status_i3focus_section_free(context->focus);
+                context->focus = NULL;
+            }
+            _j4status_i3focus_section_new(context, event->container, 1);
+        }
         section_ = g_queue_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
         if ( section_ == NULL )
             return;
         _j4status_i3focus_section_set_focus(section_->data);
     }
+    else if ( context->focus_only )
+        return;
     else if ( g_strcmp0(event->change, "title") == 0 )
     {
         section_ = g_queue_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
@@ -252,9 +265,21 @@ static void _j4status_i3focus_uninit(J4statusPluginContext *context);
 static J4statusPluginContext *
 _j4status_i3focus_init(J4statusCoreInterface *core)
 {
+    GKeyFile *key_file;
+    gboolean focus_only = TRUE;
     i3ipcConnection *connection;
     i3ipcCommandReply *reply;
     GError *error = NULL;
+
+    key_file = j4status_config_get_key_file("i3focus");
+    if ( key_file != NULL )
+    {
+        gboolean b;
+        b = g_key_file_get_boolean(key_file, "i3focus", "FocusOnly", &error);
+        if ( error == NULL )
+            focus_only = b;
+        g_clear_error(&error);
+    }
 
     connection = i3ipc_connection_new(NULL, &error);
     if ( connection == NULL )
@@ -264,7 +289,11 @@ _j4status_i3focus_init(J4statusCoreInterface *core)
         return NULL;
     }
 
-    reply = i3ipc_connection_subscribe(connection, I3IPC_EVENT_WINDOW|I3IPC_EVENT_WORKSPACE, &error);
+    i3ipcEvent events = I3IPC_EVENT_WINDOW;
+    if ( ! focus_only )
+        events |= I3IPC_EVENT_WORKSPACE;
+
+    reply = i3ipc_connection_subscribe(connection, events, &error);
     if ( reply == NULL )
     {
         g_warning("Couldn't subscribe to i3 events: %s", error->message);
@@ -286,13 +315,14 @@ _j4status_i3focus_init(J4statusCoreInterface *core)
     context = g_new0(J4statusPluginContext, 1);
     context->core = core;
     context->connection = connection;
+    context->focus_only = focus_only;
 
     context->sections = g_queue_new();
 
     g_signal_connect(context->connection, "window", G_CALLBACK(_j4status_i3focus_window_callback), context);
-    g_signal_connect(context->connection, "workspace", G_CALLBACK(_j4status_i3focus_workspace_callback), context);
+    if ( ! context->focus_only )
+        g_signal_connect(context->connection, "workspace", G_CALLBACK(_j4status_i3focus_workspace_callback), context);
 
-    GKeyFile *key_file = j4status_config_get_key_file("i3focus");
     if ( key_file != NULL )
     {
         context->tabs_mode = g_key_file_get_boolean(key_file, "i3focus", "TabsMode", NULL);

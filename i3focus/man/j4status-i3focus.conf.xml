@@ -77,6 +77,15 @@
             <variablelist>
                 <varlistentry>
                     <term>
+                        <varname>FocusOnly=</varname>
+                        (A <type>boolean</type>, defaults to <literal>true</literal>)
+                    </term>
+                    <listitem>
+                        <para>If the plugin should only display the currently focused window title.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
                         <varname>MaxTotalWidth=</varname>
                         (A <type>positive integer</type>, defaults to <literal>0</literal>, infinite)
                     </term>
