@@ -100,7 +100,7 @@ _j4status_i3focus_section_set_colour(J4statusI3focusSection *section)
     if ( section == section->context->focus )
         value = 0xff;
     else if ( ( section->i % 2 ) == 0 )
-        value = 0x55;
+        value = 0x88;
     else
         value = 0xaa;
 
