@@ -140,7 +140,7 @@
                 <varlistentry>
                     <term>
                         <varname>UpEthernet=</varname>
-                        (<type>format string</type>, defaults to <literal>"${addresses}${speed/^.+$/ (\0b/s)}"</literal>)
+                        (<type>format string</type>, defaults to <literal>"${addresses}${speed:+(${speed(b)}b/s)}"</literal>)
                     </term>
                     <listitem>
                         <para>This format is used for all active Ethernet interfaces.</para>
@@ -166,7 +166,7 @@
                 <varlistentry>
                     <term>
                         <varname>UpWiFi=</varname>
-                        (<type>format string</type>, defaults to <literal>"${addresses} (${strength}${strength:+% }${ssid/^.+$/at \0, }${bitrate}b/s)"</literal>)
+                        (<type>format string</type>, defaults to <literal>"${addresses} (${strength}${strength:+% }${ssid/^.+$/at \\0, }${bitrate(b)}b/s)"</literal>)
                     </term>
                     <listitem>
                         <para>This format is used for all inactive Ethernet interfaces.</para>
