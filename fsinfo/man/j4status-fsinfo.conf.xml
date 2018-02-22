@@ -129,7 +129,7 @@
                     </term>
                     <listitem>
                         <para>What to display.</para>
-                        <para>Defaults to "<literal>${avail} (${p_avail}%)</literal>".</para>
+                        <para>Defaults to "<literal>${avail(b.1)}b (${p_avail(f04.1)}%)</literal>".</para>
                         <para><varname>reference</varname> can be:</para>
                         <variablelist>
                             <varlistentry>

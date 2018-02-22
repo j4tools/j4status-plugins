@@ -142,14 +142,13 @@ _j4status_fsinfo_section_locate_device(J4statusFSInfoSection *section,
  * J4statusFormatStringReplaceCallback instance
  * Strings are in user_data[]
  */
-static const gchar *
+static GVariant *
 _j4status_fsinfo_format_callback(const gchar *token, guint64 value,
-                                 const gchar *key, gint64 index,
                                  gconstpointer user_data)
 {
-    gchar *const *fdata = user_data;
-    if (value < TOTAL_TOKEN_COUNT)
-        return fdata[value];
+    GVariant *const *fdata = user_data;
+    if (value < TOTAL_TOKEN_COUNT && fdata[value])
+        return g_variant_ref(fdata[value]);
     else
         return NULL;
 }
@@ -165,24 +164,6 @@ _j4status_fsinfo_format_callback(const gchar *token, guint64 value,
     g_warning(error);                                                         \
     return;                                                                   \
 } while (0)
-
-/**
- * Subfunction for section_update
- * Formats block count in foo-bytes
- */
-static inline gchar *
-print_disk_size(fsblkcnt_t blocks, gulong bsize)
-{
-    guint64 value = (guint64) blocks * bsize << 4;
-    const gchar PREFIXES[] = "\0KMGTP"; // 1150 Pib ought to be
-                                        // enough for anybody
-    const gchar *prefix;
-    for (prefix = PREFIXES; value >= (1 << 14); prefix++)
-        value >>= 10;
-    gchar *size = g_strdup_printf(*prefix ? "%.1f %cib" : "%.1f b",
-                                  value / 16.0, *prefix);
-    return size;
-}
 
 /**
  * GFunc instance
@@ -259,7 +240,7 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
         return;
       }
 
-    gchar *fdata[TOTAL_TOKEN_COUNT] = { NULL };
+    GVariant *fdata[TOTAL_TOKEN_COUNT] = { NULL };
     fsblkcnt_t used = stats.f_blocks - stats.f_bfree;
     // we don't include reserved blocks in total count
     // because (a) it wouldn't make sense to display static parameter
@@ -269,23 +250,19 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
     // since free includes privilegied blocks itself
     fsblkcnt_t adjusted_total = used + stats.f_bavail;
     if (section->used_tokens & 1 << TOKEN_AVAILABLE)
-        fdata[TOKEN_AVAILABLE] = print_disk_size(stats.f_bavail,
-                                                 stats.f_bsize);
+        fdata[TOKEN_AVAILABLE] = g_variant_new_uint64(stats.f_bavail * stats.f_bsize);
     if (section->used_tokens & 1 << TOKEN_FREE)
-        fdata[TOKEN_FREE] = print_disk_size(stats.f_bfree, stats.f_bsize);
+        fdata[TOKEN_FREE] = g_variant_new_uint64(stats.f_bfree * stats.f_bsize);
     if (section->used_tokens & 1 << TOKEN_USED)
-        fdata[TOKEN_USED] = print_disk_size(used, stats.f_bsize);
+        fdata[TOKEN_USED] = g_variant_new_uint64(used * stats.f_bsize);
     if (section->used_tokens & 1 << TOKEN_TOTAL)
-        fdata[TOKEN_TOTAL] = print_disk_size(adjusted_total, stats.f_bsize);
+        fdata[TOKEN_TOTAL] = g_variant_new_uint64(adjusted_total * stats.f_bsize);
     if (section->used_tokens & 1 << TOKEN_AVAILABLE_RATIO)
-        fdata[TOKEN_AVAILABLE_RATIO] = g_strdup_printf("%04.1f",
-                                      100.0 * stats.f_bavail / adjusted_total);
+        fdata[TOKEN_AVAILABLE_RATIO] = g_variant_new_double(100.0 * stats.f_bavail / adjusted_total);
     if (section->used_tokens & 1 << TOKEN_FREE_RATIO)
-        fdata[TOKEN_FREE_RATIO] = g_strdup_printf("%04.1f",
-                                       100.0 * stats.f_bfree / stats.f_blocks);
+        fdata[TOKEN_FREE_RATIO] = g_variant_new_double(100.0 * stats.f_bfree / stats.f_blocks);
     if (section->used_tokens & 1 << TOKEN_USED_RATIO)
-        fdata[TOKEN_USED_RATIO] = g_strdup_printf("%04.1f",
-                                                100.0 * used / adjusted_total);
+        fdata[TOKEN_USED_RATIO] = g_variant_new_double(100.0 * used / adjusted_total);
 
     //TODO: configurable coeff?
     j4status_section_set_state(section->section, used < adjusted_total * 3/4 ?
@@ -294,7 +271,10 @@ _j4status_fsinfo_section_update(gpointer data, gpointer user_data)
                                j4status_format_string_replace(section->format,
                                    &_j4status_fsinfo_format_callback, &fdata));
     for (guint idx = 0; idx < TOTAL_TOKEN_COUNT; idx++)
-        g_free(fdata[idx]);
+      {
+        if (fdata[idx])
+            g_variant_unref(fdata[idx]);
+      }
 }
 
 /**
@@ -340,7 +320,7 @@ static J4statusPluginContext *
 _j4status_fsinfo_init(J4statusCoreInterface *core)
 {
     const gchar FILESYSTEM[] = "Filesystem";
-    const gchar FORMAT_DEFAULT[] = "${avail} (${p_avail}%)";
+    const gchar FORMAT_DEFAULT[] = "${avail(b.1)}b (${p_avail(f04.1)}%)";
 
     GKeyFile *key_file = j4status_config_get_key_file(FILESYSTEM);
     if (!key_file) return NULL;
