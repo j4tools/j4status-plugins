@@ -56,7 +56,7 @@
             Configuration for the ALSA plugin
         </para>
         <para>
-            The ALSA plugin use the main j4status configuration file (see <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
+            The ALSA plugin uses the main j4status configuration file (see <citerefentry><refentrytitle>j4status.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
         </para>
     </refsynopsisdiv>
 
