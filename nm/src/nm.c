@@ -29,10 +29,7 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 
-#include <libnm-glib/nm-client.h>
-#include <libnm-glib/nm-device.h>
-#include <libnm-glib/nm-device-ethernet.h>
-#include <libnm-glib/nm-device-wifi.h>
+#include <libnm/NetworkManager.h>
 
 #include <j4status-plugin-input.h>
 
@@ -264,64 +261,36 @@ _j4status_nm_format_down_other_callback(const gchar *token, guint64 value, gcons
 static void
 _j4status_nm_device_get_addresses_ipv4(J4statusPluginContext *context, NMDevice *device, GVariantBuilder *builder)
 {
-    NMIP4Config *ip4_config;
+    NMIPConfig *ip4_config;
 
     ip4_config = nm_device_get_ip4_config(device);
     if ( ip4_config == NULL )
         return;
 
-    const GSList *address_;
-    for ( address_ = nm_ip4_config_get_addresses(ip4_config) ; address_ != NULL ; address_ = g_slist_next(address_) )
+    const GPtrArray *addresses = nm_ip_config_get_addresses(ip4_config);
+    guint i;
+    for ( i = 0 ; i < addresses->len ; ++i )
     {
-        guint32 address;
-        address = nm_ip4_address_get_address(address_->data);
-        g_variant_builder_add_value(builder, g_variant_new_printf("%u.%u.%u.%u", (address >> 0) & 255, (address >> 8) & 255, (address >> 16) & 255, (address >> 24) & 255));
+        NMIPAddress *addr = g_ptr_array_index(addresses, i);
+        g_variant_builder_add_value(builder, g_variant_new_string(nm_ip_address_get_address(addr)));
     }
 }
 
 static void
 _j4status_nm_device_get_addresses_ipv6(J4statusPluginContext *context, NMDevice *device, GVariantBuilder *builder)
 {
-    NMIP6Config *ip6_config;
+    NMIPConfig *ip6_config;
 
     ip6_config = nm_device_get_ip6_config(device);
     if ( ip6_config == NULL )
         return;
 
-    const GSList *address_;
-    for ( address_ = nm_ip6_config_get_addresses(ip6_config) ; address_ != NULL ; address_ = g_slist_next(address_) )
+    const GPtrArray *addresses = nm_ip_config_get_addresses(ip6_config);
+    guint i;
+    for ( i = 0 ; i < addresses->len ; ++i )
     {
-        const struct in6_addr *address;
-        address = nm_ip6_address_get_address(address_->data);
-
-        guint b = 0;
-        gsize o = 0;
-        gchar address_str[44]; /* ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128 + \0 */
-        gboolean shortened = FALSE;
-        gboolean was_shortened = FALSE;
-        guint fragment;
-        for (;;)
-        {
-            fragment = ( address->s6_addr[b] << 8 ) + address->s6_addr[b+1];
-            if ( ( fragment == 0 ) && ( ! was_shortened ) )
-                shortened = TRUE;
-            else
-            {
-                if ( shortened )
-                {
-                    o += g_snprintf(address_str, sizeof(address_str) - o, ":");
-                    shortened = FALSE;
-                    was_shortened = TRUE;
-                }
-                o += g_snprintf(address_str, sizeof(address_str) - o, "%x", fragment);
-            }
-            b += 2;
-            if ( b >= 16 )
-                break;
-            if ( ( ! shortened ) || ( b == 0 ) )
-                o += g_snprintf(address_str, sizeof(address_str) - o, ":");
-        }
-        g_variant_builder_add_value(builder, g_variant_new_string(address_str));
+        NMIPAddress *addr = g_ptr_array_index (addresses, i);
+        g_variant_builder_add_value(builder, g_variant_new_string(nm_ip_address_get_address(addr)));
     }
 }
 
@@ -457,7 +426,7 @@ _j4status_nm_device_update(J4statusPluginContext *context, J4statusNmSection *se
             if ( context->formats.up_eth_tokens & TOKEN_FLAG_UP_ETH_ADDRESSES )
                 data.addresses = _j4status_nm_device_get_addresses(context, device);
 
-            data.speed = nm_device_ethernet_get_speed(NM_DEVICE_ETHERNET(device)) * 1000;
+            data.speed = nm_device_ethernet_get_speed(NM_DEVICE_ETHERNET(device)) * 1000000;
 
             state = J4STATUS_STATE_GOOD;
             value = j4status_format_string_replace(context->formats.up_eth, _j4status_nm_format_up_eth_callback, &data);
@@ -739,6 +708,15 @@ _j4status_nm_init(J4statusCoreInterface *core)
     context = g_new0(J4statusPluginContext, 1);
     context->core = core;
 
+    context->nm_client = nm_client_new(NULL, NULL);
+    if ( context->nm_client == NULL )
+    {
+        g_message("Could not connect to network manager; aborting");
+        g_key_file_free(key_file);
+        g_free(context);
+        return NULL;
+    }
+
     context->sections = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _j4status_nm_section_free);
 
     context->show_unknown = g_key_file_get_boolean(key_file, "NetworkManager", "ShowUnknown", NULL);
@@ -773,8 +751,6 @@ _j4status_nm_init(J4statusCoreInterface *core)
     context->formats.down_wifi  = j4status_format_string_parse(format_down_wifi,  _j4status_nm_format_down_wifi_tokens,  G_N_ELEMENTS(_j4status_nm_format_down_wifi_tokens),  J4STATUS_NM_DEFAULT_FORMAT_DOWN_WIFI,  &context->formats.down_wifi_tokens);
     context->formats.up_other   = j4status_format_string_parse(format_up_other,   _j4status_nm_format_up_other_tokens,   G_N_ELEMENTS(_j4status_nm_format_up_other_tokens),   J4STATUS_NM_DEFAULT_FORMAT_UP_OTHER,   &context->formats.up_other_tokens);
     context->formats.down_other = j4status_format_string_parse(format_down_other, NULL,                                  0,                                                   J4STATUS_NM_DEFAULT_FORMAT_DOWN_OTHER, &context->formats.down_other_tokens);
-
-    context->nm_client = nm_client_new();
 
     gchar **interface;
     for ( interface = interfaces ; *interface != NULL ; ++interface )
