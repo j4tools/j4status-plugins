@@ -27,12 +27,33 @@ _j4status_mem_update(gpointer user_data)
 {
     J4statusPluginContext *context = user_data;
 
-    struct sysinfo meminfo;
-    sysinfo(&meminfo);
+    double mem_percent = -1;
 
-    unsigned long used_ram = meminfo.totalram - meminfo.freeram -
-        meminfo.sharedram - meminfo.bufferram;
-    double mem_percent = 100.0 * used_ram / meminfo.totalram;
+    FILE *f = fopen("/proc/meminfo", "r");
+    if (f) {
+        unsigned long val, total = 0, available = 0;
+        char key[21];
+        while (fscanf(f, "%20[^:]: %lu%*[^\n]\n", key, &val) >= 2) {
+            if (strcmp(key, "MemTotal") == 0)
+                total = val;
+            else if (strcmp(key, "MemAvailable") == 0) {
+                available = val;
+                mem_percent = 100.0 * (total - available) / total;
+                break;
+            }
+        }
+        fclose(f);
+    }
+
+    if (mem_percent == -1) {
+        unsigned long used_ram;
+        struct sysinfo meminfo;
+        sysinfo(&meminfo);
+
+        used_ram = meminfo.totalram - meminfo.freeram -
+            meminfo.sharedram - meminfo.bufferram;
+        mem_percent = 100.0 * used_ram / meminfo.totalram;
+    }
 
     j4status_section_set_state(context->section,
         mem_percent < context->good_threshold ? J4STATUS_STATE_GOOD :
