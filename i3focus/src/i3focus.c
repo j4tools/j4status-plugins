@@ -172,7 +172,7 @@ _j4status_i3focus_section_new(J4statusPluginContext *context, i3ipcCon *window, 
         _j4status_i3focus_section_free(section);
     else
     {
-        section->name = g_strdup(i3ipc_con_get_name(window));
+        section->name = g_strdup("");
         _j4status_i3focus_section_set_value(section, i3ipc_con_get_name(window));
         _j4status_i3focus_section_set_colour(section);
 
