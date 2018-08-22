@@ -403,9 +403,9 @@ _j4status_nm_device_update(J4statusPluginContext *context, J4statusNmSection *se
 
                 if ( context->formats.up_wifi_tokens & TOKEN_FLAG_UP_WIFI_SSID )
                 {
-                    const GByteArray *raw_ssid;
-                    raw_ssid = nm_access_point_get_ssid(section->ap);
-                    data.ssid = g_variant_new_take_string(g_strndup((const gchar *)raw_ssid->data, raw_ssid->len));
+                    GBytes *raw_ssid = nm_access_point_get_ssid(section->ap);
+                    data.ssid = g_variant_new_take_string(g_strndup(g_bytes_get_data(raw_ssid, NULL),
+                                                                    g_bytes_get_size(raw_ssid)));
                 }
             }
 
