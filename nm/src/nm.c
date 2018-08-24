@@ -176,7 +176,7 @@ typedef struct {
 } J4statusNmSection;
 
 static GVariant *
-_j4status_nm_format_up_eth_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_up_eth_callback(G_GNUC_UNUSED const gchar *token, guint64 value, gconstpointer user_data)
 {
     const J4statusNmFormatUpEthData *data = user_data;
     switch ( value )
@@ -196,7 +196,7 @@ _j4status_nm_format_up_eth_callback(const gchar *token, guint64 value, gconstpoi
 }
 
 static GVariant *
-_j4status_nm_format_up_wifi_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_up_wifi_callback(G_GNUC_UNUSED const gchar *token, guint64 value, gconstpointer user_data)
 {
     const J4statusNmFormatUpWiFiData *data = user_data;
     switch ( value )
@@ -220,7 +220,7 @@ _j4status_nm_format_up_wifi_callback(const gchar *token, guint64 value, gconstpo
 }
 
 static GVariant *
-_j4status_nm_format_down_wifi_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_down_wifi_callback(G_GNUC_UNUSED const gchar *token, guint64 value, gconstpointer user_data)
 {
     const gint64 *aps_number = user_data;
     switch ( value )
@@ -237,7 +237,7 @@ _j4status_nm_format_down_wifi_callback(const gchar *token, guint64 value, gconst
 }
 
 static GVariant *
-_j4status_nm_format_up_other_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_up_other_callback(G_GNUC_UNUSED const gchar *token, guint64 value, gconstpointer user_data)
 {
     switch ( value )
     {
@@ -253,13 +253,15 @@ _j4status_nm_format_up_other_callback(const gchar *token, guint64 value, gconstp
 }
 
 static GVariant *
-_j4status_nm_format_down_other_callback(const gchar *token, guint64 value, gconstpointer user_data)
+_j4status_nm_format_down_other_callback(G_GNUC_UNUSED const gchar *token,
+                                        G_GNUC_UNUSED guint64 value,
+                                        G_GNUC_UNUSED gconstpointer user_data)
 {
     return NULL;
 }
 
 static void
-_j4status_nm_device_get_addresses_ipv4(J4statusPluginContext *context, NMDevice *device, GVariantBuilder *builder)
+_j4status_nm_device_get_addresses_ipv4(G_GNUC_UNUSED J4statusPluginContext *context, NMDevice *device, GVariantBuilder *builder)
 {
     NMIPConfig *ip4_config;
 
@@ -277,7 +279,7 @@ _j4status_nm_device_get_addresses_ipv4(J4statusPluginContext *context, NMDevice 
 }
 
 static void
-_j4status_nm_device_get_addresses_ipv6(J4statusPluginContext *context, NMDevice *device, GVariantBuilder *builder)
+_j4status_nm_device_get_addresses_ipv6(G_GNUC_UNUSED J4statusPluginContext *context, NMDevice *device, GVariantBuilder *builder)
 {
     NMIPConfig *ip6_config;
 
@@ -471,7 +473,8 @@ _j4status_nm_device_update(J4statusPluginContext *context, J4statusNmSection *se
 }
 
 static void
-_j4status_nm_access_point_property_changed(NMAccessPoint *device, GParamSpec *pspec, gpointer user_data)
+_j4status_nm_access_point_property_changed(G_GNUC_UNUSED NMAccessPoint *device,
+                                           G_GNUC_UNUSED GParamSpec *pspec, gpointer user_data)
 {
     J4statusNmSection *section = user_data;
     _j4status_nm_device_update(section->context, section, section->device);
@@ -496,14 +499,17 @@ _j4status_nm_device_property_changed(NMDevice *device, GParamSpec *pspec, gpoint
 }
 
 static void
-_j4status_nm_device_state_changed(NMDevice *device, guint state, guint arg2, guint arg3, gpointer user_data)
+_j4status_nm_device_state_changed(NMDevice *device,
+                                  G_GNUC_UNUSED guint state,
+                                  G_GNUC_UNUSED guint arg2,
+                                  G_GNUC_UNUSED guint arg3, gpointer user_data)
 {
     J4statusNmSection *section = user_data;
     _j4status_nm_device_update(section->context, section, device);
 }
 
 static void
-_j4status_nm_device_monitor(gpointer key, gpointer data, gpointer user_data)
+_j4status_nm_device_monitor(G_GNUC_UNUSED gpointer key, gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
     J4statusNmSection *section = data;
 
@@ -526,7 +532,7 @@ _j4status_nm_device_monitor(gpointer key, gpointer data, gpointer user_data)
 }
 
 static void
-_j4status_nm_device_unmonitor(gpointer key, gpointer data, gpointer user_data)
+_j4status_nm_device_unmonitor(G_GNUC_UNUSED gpointer key, gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
     J4statusNmSection *section = data;
 
@@ -638,7 +644,7 @@ _j4status_nm_section_detach_device(J4statusNmSection *section)
 }
 
 static void
-_j4status_nm_client_device_added(NMClient *client, NMDevice *device, gpointer user_data)
+_j4status_nm_client_device_added(G_GNUC_UNUSED NMClient *client, NMDevice *device, gpointer user_data)
 {
     J4statusPluginContext *context = user_data;
     J4statusNmSection *section;
@@ -648,7 +654,7 @@ _j4status_nm_client_device_added(NMClient *client, NMDevice *device, gpointer us
 }
 
 static void
-_j4status_nm_client_device_removed(NMClient *client, NMDevice *device, gpointer user_data)
+_j4status_nm_client_device_removed(G_GNUC_UNUSED NMClient *client, NMDevice *device, gpointer user_data)
 {
     J4statusPluginContext *context = user_data;
     J4statusNmSection *section;
