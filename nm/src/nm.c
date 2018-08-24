@@ -418,8 +418,10 @@ _j4status_nm_device_update(J4statusPluginContext *context, J4statusNmSection *se
 
             value = j4status_format_string_replace(context->formats.up_wifi, _j4status_nm_format_up_wifi_callback, &data);
 
-            if ( data.ssid != NULL )
+            if ( data.ssid != NULL ) {
                 g_variant_unref(data.ssid);
+                data.ssid = NULL;
+            }
             if ( data.addresses != NULL )
                 g_variant_unref(data.addresses);
         }
