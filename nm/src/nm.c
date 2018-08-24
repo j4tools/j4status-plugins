@@ -494,8 +494,10 @@ _j4status_nm_device_property_changed(NMDevice *device, GParamSpec *pspec, gpoint
             g_object_unref(section->ap);
         }
         section->ap = nm_device_wifi_get_active_access_point(NM_DEVICE_WIFI(device));
-        if ( section->ap != NULL )
+        if ( section->ap != NULL ) {
+            g_object_ref(section->ap);
             section->strength_handler = g_signal_connect(g_object_ref(section->ap), "notify::strength", G_CALLBACK(_j4status_nm_access_point_property_changed), section);
+        }
     }
     _j4status_nm_device_update(section->context, section, device);
 }
@@ -523,8 +525,11 @@ _j4status_nm_device_monitor(G_GNUC_UNUSED gpointer key, gpointer data, G_GNUC_UN
     case NM_DEVICE_TYPE_WIFI:
         section->bitrate_handler = g_signal_connect(section->device, "notify::bitrate", G_CALLBACK(_j4status_nm_device_property_changed), section);
         section->active_access_point_handler = g_signal_connect(section->device, "notify::active-access-point", G_CALLBACK(_j4status_nm_device_property_changed), section);
-        if ( section->ap != NULL )
+        section->ap = nm_device_wifi_get_active_access_point(NM_DEVICE_WIFI(section->device));
+        if ( section->ap != NULL ) {
+            g_object_ref(section->ap);
             section->strength_handler = g_signal_connect(section->ap, "notify::strength", G_CALLBACK(_j4status_nm_access_point_property_changed), section);
+        }
     break;
     default:
     break;
@@ -546,8 +551,11 @@ _j4status_nm_device_unmonitor(G_GNUC_UNUSED gpointer key, gpointer data, G_GNUC_
     case NM_DEVICE_TYPE_WIFI:
         g_signal_handler_disconnect(section->device, section->bitrate_handler);
         g_signal_handler_disconnect(section->device, section->active_access_point_handler);
-        if ( section->ap != NULL )
+        if ( section->ap != NULL ) {
             g_signal_handler_disconnect(section->ap, section->strength_handler);
+            g_object_unref(section->ap);
+            section->ap = NULL;
+        }
     break;
     default:
     break;
@@ -576,9 +584,6 @@ _j4status_nm_section_attach_device(J4statusPluginContext *context, J4statusNmSec
     case NM_DEVICE_TYPE_WIFI:
         name = "nm-wifi";
         label = "W";
-        section->ap = nm_device_wifi_get_active_access_point(NM_DEVICE_WIFI(device));
-        if ( section->ap != NULL )
-            g_object_ref(section->ap);
     break;
     case NM_DEVICE_TYPE_BT:
         name = "nm-bluetooth";
