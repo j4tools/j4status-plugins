@@ -9,7 +9,7 @@ i3focus_i3focus_la_SOURCES = \
 	i3focus/src/i3focus.c
 
 i3focus_i3focus_la_CPPFLAGS = \
-	-D G_LOG_DOMAIN=\"j4status-plugins-mpris\" \
+	-D G_LOG_DOMAIN=\"j4status-plugins-i3focus\" \
 	$(null)
 
 i3focus_i3focus_la_CFLAGS = \
