@@ -281,7 +281,7 @@ _j4status_i3focus_init(J4statusCoreInterface *core)
         g_clear_error(&error);
     }
 
-    connection = i3ipc_connection_new(NULL, &error);
+    connection = i3ipc_connection_new(g_getenv("I3SOCK"), &error);
     if ( connection == NULL )
     {
         g_warning("Couldn't connection to i3: %s", error->message);
