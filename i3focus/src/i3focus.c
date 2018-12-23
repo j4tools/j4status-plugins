@@ -203,8 +203,6 @@ _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEven
             return;
         _j4status_i3focus_section_set_focus(section_->data);
     }
-    else if ( context->focus_only )
-        return;
     else if ( g_strcmp0(event->change, "title") == 0 )
     {
         section_ = g_queue_find_custom(context->sections, event->container, _j4status_i3focus_section_search);
@@ -213,6 +211,8 @@ _j4status_i3focus_window_callback(G_GNUC_UNUSED GObject *object, i3ipcWindowEven
         J4statusI3focusSection *section = section_->data;
         _j4status_i3focus_section_set_value(section, i3ipc_con_get_name(event->container));
     }
+    else if ( context->focus_only )
+        return;
     else if ( g_strcmp0(event->change, "new") == 0 )
     {
         gsize length = g_queue_get_length(context->sections);
