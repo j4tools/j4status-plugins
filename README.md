@@ -18,6 +18,5 @@ To build j4status-plugins from Git, you will need some additional dependencies:
 You also need to make sure Autotools and pkg-config will find the j4status files.
 Therefore, before running `./autogen.sh`, you will probably need to export these two variables:
 ```
-export ACLOCAL_FLAGS='-I /usr/local/share/aclocal'
 export PKG_CONFIG_PATH='/usr/local/lib/pkgconfig'
 ```
