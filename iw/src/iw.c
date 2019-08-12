@@ -2,7 +2,7 @@
  * iw - j4status plugin for displaying wireless connection data using
  * the Linux Wireless Extension API
  *
- * Copyright 2014 Mihail "Tomsod" Sh. <tomsod-m@ya.ru>
+ * Copyright 2014-2019 Mihail "Tomsod" Sh. <tomsod-m@ya.ru>
  *
  * This file is part of j4status-plugins.
  *
@@ -28,6 +28,8 @@
 #include <glib.h>
 #include <j4status-plugin-input.h>
 
+#include <string.h> // memcpy()
+
 #ifdef HAVE_NET_IF_H
 #include <net/if.h> // struct ifreq, if_nametoindex()
 #endif // HAVE_NET_IF_H
@@ -39,10 +41,6 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h> // struct in_addr
 #endif // HAVE_NETINET_IN_H
-
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h> // inet_ntoa()
-#endif // HAVE_ARPA_INET_H
 
 #include <iwlib.h> // various WE wrappers
 
@@ -84,29 +82,52 @@ static const gchar * const _j4status_iw_tokens[] =
     [TOKEN_BITRATE] = "bitrate",
 };
 
+/// data for _j4status_iw_format_callback()
+struct J4statusIWFormatData
+{
+    guint64 set_tokens;
+    guint8 ipv4[4];
+    gdouble quality;
+    gchar *essid;
+    guint32 bitrate;
+};
+
 
 
 /**
  * J4statusFormatStringReplaceCallback instance
- * Strings are all pre-formatted, of course
+ * Now returns various types of data instead of only strings
  */
-static const gchar *
-_j4status_iw_format_callback(const gchar *token, guint64 value,
-                             const gchar *key, gint64 index,
+static GVariant *
+_j4status_iw_format_callback(G_GNUC_UNUSED const gchar *token, guint64 value,
                              gconstpointer user_data)
 {
-    gchar *const *fdata = user_data;
-    if (value < TOTAL_TOKEN_COUNT)
-        return fdata[value];
-    else
+    const struct J4statusIWFormatData *fdata = user_data;
+
+    if ((fdata->set_tokens & 1 << value) == 0)
         return NULL;
+
+    switch (value)
+      {
+    case TOKEN_IPV4:
+        return g_variant_new_fixed_array(G_VARIANT_TYPE_BYTE, fdata->ipv4, 4,
+                                         sizeof(guint8));
+    case TOKEN_QUALITY:
+        return g_variant_new_double(fdata->quality);
+    case TOKEN_ESSID:
+        return g_variant_new_string(fdata->essid);
+    case TOKEN_BITRATE:
+        return g_variant_new_uint32(fdata->bitrate);
+      }
+
+    return NULL; // actually should not be reached
 }
 
 /**
  * GFunc instance
  * Called every "period" seconds for each section
  * Here data is gathered via WE (and more general) ioctl() calls
- * Has several temporary local buffers
+ * and put into "fdata" for further formatting
  */
 static void
 _j4status_iw_section_update(gpointer data, gpointer user_data)
@@ -124,9 +145,8 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
         return;
       }
 
-    gchar *fdata[TOTAL_TOKEN_COUNT] = { NULL };
+    struct J4statusIWFormatData fdata = {.set_tokens = 0};
     char essid[IW_ESSID_MAX_SIZE + 2];
-    char bitrate[sizeof "12.3456 Mb/s"]; // formatted as "%g %cb/s"
   {
     iwrange range;
     iwstats stats;
@@ -142,8 +162,10 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
                                    (stats.qual.qual > range.avg_qual.qual) ?
                                  J4STATUS_STATE_GOOD : J4STATUS_STATE_AVERAGE);
         if (context->used_tokens & 1 << TOKEN_QUALITY)
-            fdata[TOKEN_QUALITY] = g_strdup_printf("%.f", 100.0 *
-                                        stats.qual.qual / range.max_qual.qual);
+          {
+            fdata.quality = 100.0 * stats.qual.qual / range.max_qual.qual;
+            fdata.set_tokens |= 1 << TOKEN_QUALITY;
+          }
       }
   }
   {
@@ -153,7 +175,7 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
       {
         request.u.essid = (struct iw_point)
           {
-            .pointer = &essid,
+            .pointer = essid,
             .length = IW_ESSID_MAX_SIZE + 2,
             .flags = 0,
           };
@@ -163,17 +185,21 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
             // will only raise alarm if ESSID was expected!
             j4status_section_set_state(section->section,
                                        J4STATUS_STATE_UNAVAILABLE);
-            fdata[TOKEN_ESSID] = g_strdup(context->unknown);
+            fdata.essid = context->unknown;
           }
         else
-            fdata[TOKEN_ESSID] = g_strndup(essid, request.u.essid.length);
+          {
+            essid[request.u.essid.length] = '\0'; // just in case
+            fdata.essid = essid;
+          }
+        fdata.set_tokens |= 1 << TOKEN_ESSID;
       }
 
     if (context->used_tokens & 1 << TOKEN_BITRATE
         && iw_get_ext(skfd, section->interface, SIOCGIWRATE, &request) >= 0)
       {
-        iw_print_bitrate(bitrate, sizeof(bitrate), request.u.bitrate.value);
-        fdata[TOKEN_BITRATE] = bitrate;
+        fdata.bitrate = request.u.bitrate.value;
+        fdata.set_tokens |= 1 << TOKEN_BITRATE;
       }
   }
     if (context->used_tokens & 1 << TOKEN_IPV4)
@@ -188,21 +214,15 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
         else
           {
             // IPv4 resides in bytes 2 to 5
-            struct in_addr *in = (struct in_addr *)
-                                 &request.ifr_addr.sa_data[2];
-            // For some reason the string is returned in an "internal array".
-            // Makes me suspicious... Here it should be used
-            // for very short time though, so meh.
-            fdata[TOKEN_IPV4] = inet_ntoa(*in);
+            memcpy(fdata.ipv4, &request.ifr_addr.sa_data[2], 4);
+            fdata.set_tokens |= 1 << TOKEN_IPV4;
+          }
       }
-  }
     iw_sockets_close(skfd);
 
     j4status_section_set_value(section->section,
                                j4status_format_string_replace(context->format,
                                        &_j4status_iw_format_callback, &fdata));
-    g_free(fdata[TOKEN_QUALITY]);
-    g_free(fdata[TOKEN_ESSID]);
 }
 
 /**
@@ -243,7 +263,8 @@ static J4statusPluginContext *
 _j4status_iw_init(J4statusCoreInterface *core)
 {
     const gchar WIRELESS[] = "Wireless";
-    const gchar FORMAT_DEFAULT[] = "${ip}${ip:+ @ }${essid}${quality/^.+$/: \\0%}";
+    const gchar FORMAT_DEFAULT[] = "${ip[@.]}${ip:+ @ }${essid}${quality:+: }"
+                                   "${quality(f.0)}${quality:+%}";
 
     GKeyFile *key_file = j4status_config_get_key_file(WIRELESS);
     if (!key_file)

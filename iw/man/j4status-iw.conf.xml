@@ -8,7 +8,7 @@
   iw - j4status plugin for displaying wireless connection data using
   the Linux Wireless Extension API
 
-  Copyright 2014 Mihail "Tomsod" Sh. <tomsod-m@ya.ru>
+  Copyright 2014-2019 Mihail "Tomsod" Sh. <tomsod-m@ya.ru>
 
   This file is part of j4status-plugins.
 
@@ -97,7 +97,7 @@
                     </term>
                     <listitem>
                         <para>What to display.</para>
-                        <para>Defaults to "<literal>${ip}${ip:+ @ }${essid}${quality/^.+$/: \0%}</literal>".</para>
+                        <para>Defaults to "<literal>${ip[@.]}${ip:+ @ }${essid}${quality:+: }${quality(f.0)}${quality:+%}</literal>".</para>
                         <para><varname>reference</varname> can be:</para>
                         <variablelist>
                             <varlistentry>
@@ -105,7 +105,8 @@
                                     <literal>ip</literal>
                                 </term>
                                 <listitem>
-                                    <para>IPv4 of estabilished connection.</para>
+                                    <para>An <type>array of numbers</type> representing the IPv4 of estabilished connection.</para>
+                                    <para>To display the IP in the standard dot-decimal notation, use <literal>${ip[@.]}</literal>.</para>
                                 </listitem>
                             </varlistentry>
                             <varlistentry>
@@ -113,7 +114,7 @@
                                     <literal>quality</literal>
                                 </term>
                                 <listitem>
-                                    <para>Connection quality in percents.</para>
+                                    <para>A <type>percentage</type> expressing the connection quality.</para>
                                 </listitem>
                             </varlistentry>
                             <varlistentry>
@@ -129,7 +130,7 @@
                                     <literal>bitrate</literal>
                                 </term>
                                 <listitem>
-                                    <para>Connection bitrate.</para>
+                                    <para>A <type>number</type> equal to the connection bitrate in bytes per second.</para>
                                 </listitem>
                             </varlistentry>
                         </variablelist>
