@@ -147,6 +147,15 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
+                        <varname>HideInactive=</varname> (<type>boolean</type>)
+                    </term>
+                    <listitem>
+                        <para>If <literal>true</literal>, the sections without a connection will be hidden.</para>
+                        <para>Defaults to <literal>false</literal>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
                         <varname>Frequency=</varname> (<type>number</type>)
                     </term>
                     <listitem>

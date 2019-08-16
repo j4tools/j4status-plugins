@@ -97,6 +97,7 @@
                     <listitem>
                         <para>What to display when storage device is absent.</para>
                         <para>Defaults to "<literal>Not found</literal>".</para>
+                        <para>If an empty string is specified, the section will be hidden instead.</para>
                     </listitem>
                 </varlistentry>
                  <varlistentry>
@@ -106,6 +107,7 @@
                     <listitem>
                         <para>What to display when storage device is present but not mounted.</para>
                         <para>Defaults to "<literal>Unmounted</literal>".</para>
+                        <para>If an empty string is specified, the section will be hidden instead.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>

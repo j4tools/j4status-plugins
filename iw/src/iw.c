@@ -34,10 +34,6 @@
 #include <net/if.h> // struct ifreq, if_nametoindex()
 #endif // HAVE_NET_IF_H
 
-#ifdef HAVE_SYS_IOCTL_H
-#include <sys/ioctl.h> // ioctl()
-#endif // HAVE_SYS_IOCTL_H
-
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h> // struct in_addr
 #endif // HAVE_NETINET_IN_H
@@ -53,6 +49,7 @@ struct _J4statusPluginContext
     J4statusFormatString *format;
     guint64 used_tokens;
     char *unknown;
+    gboolean hide_inactive;
 };
 
 /// derived from J4statusSection
@@ -145,6 +142,19 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
         return;
       }
 
+    if (context->hide_inactive)
+      {
+        struct ifreq request;
+        if (iw_get_ext(skfd, section->interface, SIOCGIFFLAGS, &request) >= 0
+            && (request.ifr_flags & (IFF_UP | IFF_RUNNING))
+               != (IFF_UP | IFF_RUNNING))
+          {
+            iw_sockets_close(skfd);
+            j4status_section_set_value(section->section, NULL);
+            return;
+          }
+      }
+
     struct J4statusIWFormatData fdata = {.set_tokens = 0};
     char essid[IW_ESSID_MAX_SIZE + 2];
   {
@@ -168,7 +178,7 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
           }
       }
   }
-  {
+
     struct iwreq request;
 
     if (context->used_tokens & 1 << TOKEN_ESSID)
@@ -201,20 +211,18 @@ _j4status_iw_section_update(gpointer data, gpointer user_data)
         fdata.bitrate = request.u.bitrate.value;
         fdata.set_tokens |= 1 << TOKEN_BITRATE;
       }
-  }
+
     if (context->used_tokens & 1 << TOKEN_IPV4)
       {
-        struct ifreq request;
-        request.ifr_addr.sa_family = AF_INET;
-        g_strlcpy(request.ifr_name, section->interface, IFNAMSIZ);
-        if (ioctl(skfd, SIOCGIFADDR, &request) < 0)
+        request.u.ap_addr.sa_family = AF_INET;
+        if (iw_get_ext(skfd, section->interface, SIOCGIFADDR, &request) < 0)
           {
             //TODO: IPv6
           }
         else
           {
             // IPv4 resides in bytes 2 to 5
-            memcpy(fdata.ipv4, &request.ifr_addr.sa_data[2], 4);
+            memcpy(fdata.ipv4, &request.u.ap_addr.sa_data[2], 4);
             fdata.set_tokens |= 1 << TOKEN_IPV4;
           }
       }
@@ -286,6 +294,8 @@ _j4status_iw_init(J4statusCoreInterface *core)
                                                  "Unknown", NULL, NULL);
     gint period = g_key_file_get_integer(key_file, WIRELESS, //must be positive
                                          "Frequency", NULL);
+    gboolean hide_inactive = g_key_file_get_boolean(key_file, WIRELESS,
+                                                    "HideInactive", NULL);
     g_key_file_free(key_file);
 
     GSList *sections = NULL;
@@ -325,6 +335,7 @@ _j4status_iw_init(J4statusCoreInterface *core)
     context->format = j4status_format_string_parse(format, _j4status_iw_tokens,
                      TOTAL_TOKEN_COUNT, FORMAT_DEFAULT, &context->used_tokens);
     context->unknown = unknown ? unknown : g_strdup("unknown");
+    context->hide_inactive = hide_inactive;
     return context;
 }
 
