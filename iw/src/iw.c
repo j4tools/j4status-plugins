@@ -29,15 +29,8 @@
 #include <j4status-plugin-input.h>
 
 #include <string.h> // memcpy()
-
-#ifdef HAVE_NET_IF_H
 #include <net/if.h> // struct ifreq, if_nametoindex()
-#endif // HAVE_NET_IF_H
-
-#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h> // struct in_addr
-#endif // HAVE_NETINET_IN_H
-
 #include <iwlib.h> // various WE wrappers
 
 /// implementation of J4statusPluginContext (w/o the _underscore)

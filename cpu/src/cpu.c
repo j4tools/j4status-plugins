@@ -27,17 +27,9 @@
 #include <glib.h>
 #include <j4status-plugin-input.h>
 
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h> // strtoul()
-#endif // HAVE_STDLIB_H
-
-#ifdef HAVE_STRING_H
 #include <string.h> // memcmp(), memset()
-#endif // HAVE_STRING_H
-
-#ifdef HAVE_UNISTD_H
 #include <unistd.h> // access()
-#endif // HAVE_UNISTD_H
 
 /// Number of (used) entries for "cpu" line in PROC_STAT
 #define NUM_ENTRIES 8

@@ -26,19 +26,11 @@
 
 #include <glib.h>
 #include <j4status-plugin-input.h>
+
 #include <blkid.h> // blkid_evaluate_tag(), blkid_cache
-
-#ifdef HAVE_UNISTD_H
 #include <unistd.h> // access()
-#endif //HAVE_UNISTD_H
-
-#ifdef HAVE_MNTENT_H
 #include <mntent.h> // setmntent(), struct mntent, getmntent(), endmntent()
-#endif //HAVE_MNTENT_H
-
-#ifdef HAVE_SYS_STATVFS_H
 #include <sys/statvfs.h> // statvfs(), struct statvfs
-#endif //HAVE_SYS_STATVFS_H
 
 /// implementation of J4statusPluginContext
 struct _J4statusPluginContext
