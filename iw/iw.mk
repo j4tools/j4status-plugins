@@ -9,8 +9,7 @@ iw_iw_la_SOURCES = \
 
 iw_iw_la_CFLAGS = \
 	$(AM_CFLAGS) \
-	$(IW_PLUGIN_CFLAGS) \
-	$(LIBIW_CFLAGS)
+	$(IW_PLUGIN_CFLAGS)
 
 iw_iw_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
@@ -18,5 +17,4 @@ iw_iw_la_LDFLAGS = \
 
 iw_iw_la_LIBADD = \
 	$(J4STATUS_PLUGIN_LIBS) \
-	$(IW_PLUGIN_LIBS) \
-	$(LIBIW_LIBS)
+	$(IW_PLUGIN_LIBS)

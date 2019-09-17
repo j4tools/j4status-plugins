@@ -9,8 +9,7 @@ fsinfo_fsinfo_la_SOURCES = \
 
 fsinfo_fsinfo_la_CFLAGS = \
 	$(AM_CFLAGS) \
-	$(FSINFO_PLUGIN_CFLAGS) \
-	$(LIBBLKID_CFLAGS)
+	$(FSINFO_PLUGIN_CFLAGS)
 
 fsinfo_fsinfo_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
@@ -18,5 +17,4 @@ fsinfo_fsinfo_la_LDFLAGS = \
 
 fsinfo_fsinfo_la_LIBADD = \
 	$(J4STATUS_PLUGIN_LIBS) \
-	$(FSINFO_PLUGIN_LIBS) \
-	$(LIBBLKID_LIBS)
+	$(FSINFO_PLUGIN_LIBS)
